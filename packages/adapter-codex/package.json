@@ -1,0 +1,13 @@
+{
+  "name": "@skills/adapter-codex",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@skills/core": "0.1.0"
+  }
+}

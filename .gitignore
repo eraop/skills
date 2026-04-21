@@ -1,6 +1,8 @@
 .worktrees/
 node_modules/
+.tmp/
 dist/
 dist-ts/
 coverage/
+*.tsbuildinfo
 .DS_Store

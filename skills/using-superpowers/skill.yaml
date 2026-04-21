@@ -1,0 +1,16 @@
+name: using-superpowers
+title: Using Superpowers
+description: Use when starting any conversation.
+version: 0.1.0
+tags:
+  - workflow
+triggers:
+  - user asks to start a task
+platforms:
+  - codex
+  - copilot
+  - cursor
+platform_overrides:
+  codex: {}
+  copilot: {}
+  cursor: {}

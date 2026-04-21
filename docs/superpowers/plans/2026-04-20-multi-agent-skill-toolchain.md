@@ -15,6 +15,8 @@
 This plan creates the initial repository skeleton below and keeps each file focused on one responsibility.
 
 - Create: `package.json`
+- Create: `tsconfig.json`
+- Create: `tsconfig.build.json`
 - Create: `tsconfig.base.json`
 - Create: `.gitignore`
 - Create: `README.md`
@@ -60,6 +62,9 @@ This plan creates the initial repository skeleton below and keeps each file focu
 
 - Use npm workspaces to keep setup simple in a brand-new repository.
 - Use ESM TypeScript throughout the repo.
+- Keep the root `tsconfig.json` responsible for workspace-level typechecking only.
+- Keep the root `tsconfig.build.json` responsible for workspace package references and build mode.
+- Keep `tsconfig.base.json` limited to shared compiler defaults, not package-specific output paths.
 - Keep `skills/<name>/` human-maintained and `dist/` fully generated.
 - Use `npm test` for the full test suite and `npm run build` for TypeScript output.
 - Use `using-superpowers` as the first real fixture skill.
@@ -68,6 +73,8 @@ This plan creates the initial repository skeleton below and keeps each file focu
 
 **Files:**
 - Create: `package.json`
+- Create: `tsconfig.json`
+- Create: `tsconfig.build.json`
 - Create: `tsconfig.base.json`
 - Create: `.gitignore`
 - Create: `README.md`
@@ -94,9 +101,9 @@ Expected: npm exits non-zero because `package.json` does not exist yet.
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b packages/core packages/adapter-codex packages/adapter-copilot packages/adapter-cursor packages/cli",
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run",
-    "lint": "tsc -b --pretty false"
+    "lint": "tsc -p tsconfig.json --pretty false"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
@@ -106,7 +113,37 @@ Expected: npm exits non-zero because `package.json` does not exist yet.
 }
 ```
 
-- [ ] **Step 3: Create the shared TypeScript config**
+- [ ] **Step 3: Create the root typecheck config, root build config, and shared TypeScript base config**
+
+`tsconfig.json`
+
+```json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "tests/**/*.ts"
+  ]
+}
+```
+
+`tsconfig.build.json`
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/adapter-codex" },
+    { "path": "./packages/adapter-copilot" },
+    { "path": "./packages/adapter-cursor" },
+    { "path": "./packages/cli" }
+  ]
+}
+```
 
 ```json
 {
@@ -118,9 +155,6 @@ Expected: npm exits non-zero because `package.json` does not exist yet.
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "rootDir": ".",
-    "outDir": "dist-ts",
-    "composite": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   }
@@ -158,7 +192,7 @@ Expected: npm now reads `package.json` and fails because dependencies are not in
 - [ ] **Step 6: Commit the workspace bootstrap**
 
 ```bash
-git add package.json tsconfig.base.json .gitignore README.md
+git add package.json tsconfig.json tsconfig.build.json tsconfig.base.json .gitignore README.md
 git commit -m "chore: bootstrap workspace"
 ```
 
@@ -196,7 +230,12 @@ describe("parseSkillDocument", () => {
     });
 
     expect(parsed.name).toBe("using-superpowers");
-    expect(parsed.platforms).toHaveLength(3);
+    expect(parsed.platforms).toEqual(["codex", "copilot", "cursor"]);
+    expect(parsed.platform_overrides).toEqual({
+      codex: {},
+      copilot: {},
+      cursor: {}
+    });
   });
 });
 ```
@@ -324,7 +363,8 @@ git commit -m "test: add neutral skill fixture"
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "composite": true
   },
   "include": [
     "src/**/*.ts"
@@ -563,7 +603,25 @@ export async function buildSkill(args: {
 }
 ```
 
-- [ ] **Step 5: Implement the Codex adapter**
+- [ ] **Step 5: Create adapter TypeScript configs**
+
+Use the same shape for each adapter package config:
+
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
+```
+
+- [ ] **Step 6: Implement the Codex adapter**
 
 `packages/adapter-codex/src/index.ts`
 
@@ -601,7 +659,7 @@ export async function buildCodexArtifact(args: {
 }
 ```
 
-- [ ] **Step 6: Implement the Copilot and Cursor adapters with the same contract**
+- [ ] **Step 7: Implement the Copilot and Cursor adapters with the same contract**
 
 `packages/adapter-copilot/src/index.ts`
 
@@ -669,7 +727,7 @@ export async function buildCursorArtifact(args: {
 }
 ```
 
-- [ ] **Step 7: Add adapter tests**
+- [ ] **Step 8: Add adapter tests**
 
 `tests/adapters/codex.test.ts`
 
@@ -732,7 +790,7 @@ describe("buildCursorArtifact", () => {
 });
 ```
 
-- [ ] **Step 8: Run the build and adapter tests to verify they pass**
+- [ ] **Step 9: Run the build and adapter tests to verify they pass**
 
 ```bash
 npx vitest run tests/core/build.test.ts tests/adapters/codex.test.ts tests/adapters/copilot.test.ts tests/adapters/cursor.test.ts
@@ -740,7 +798,7 @@ npx vitest run tests/core/build.test.ts tests/adapters/codex.test.ts tests/adapt
 
 Expected: PASS with four passing tests.
 
-- [ ] **Step 9: Commit the build pipeline**
+- [ ] **Step 10: Commit the build pipeline**
 
 ```bash
 git add packages/core/src/build-artifact.ts packages/core/src/build-skill.ts packages/adapter-codex packages/adapter-copilot packages/adapter-cursor tests/core/build.test.ts tests/adapters
@@ -948,7 +1006,8 @@ git commit -m "feat: add install path resolution"
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "composite": true
   },
   "include": [
     "src/**/*.ts"
