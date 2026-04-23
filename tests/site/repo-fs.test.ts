@@ -12,4 +12,24 @@ describe("isValidRepoLayout", () => {
 
     await expect(isValidRepoLayout(handle as never)).resolves.toBe(true);
   });
+
+  it("rejects a repo without a skills directory", async () => {
+    const handle = {
+      values: async function* () {
+        yield { kind: "file", name: "package.json" };
+      },
+    };
+
+    await expect(isValidRepoLayout(handle as never)).resolves.toBe(false);
+  });
+
+  it("rejects a repo without a package.json file", async () => {
+    const handle = {
+      values: async function* () {
+        yield { kind: "directory", name: "skills" };
+      },
+    };
+
+    await expect(isValidRepoLayout(handle as never)).resolves.toBe(false);
+  });
 });
