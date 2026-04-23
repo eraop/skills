@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderSkillCard } from "../../site/src/components/skill-card.js";
+import { renderWorkbenchPanel } from "../../site/src/components/workbench-panel.js";
 import { renderDetailPage } from "../../site/src/pages/detail.js";
 import type { PublishedSkill } from "../../site/src/lib/types.js";
 
@@ -50,5 +51,25 @@ describe("site rendering", () => {
     expect(html).not.toContain('<b onclick=');
     expect(html).toContain("&lt;b onclick=&quot;alert(&#39;title&#39;)&quot;&gt;Bold&lt;/b&gt;");
     expect(html).toContain("<em>allowed</em>");
+  });
+
+  it("escapes repository labels in the workbench panel", () => {
+    const connectedHtml = renderWorkbenchPanel({
+      enabled: true,
+      repoLabel: `<img src=x onerror="alert('repo')">`,
+    });
+    const rememberedHtml = renderWorkbenchPanel({
+      enabled: false,
+      rememberedRepoLabel: `<script>alert("saved")</script>`,
+    });
+
+    expect(connectedHtml).not.toContain("<img");
+    expect(connectedHtml).toContain(
+      "&lt;img src=x onerror=&quot;alert(&#39;repo&#39;)&quot;&gt;",
+    );
+    expect(rememberedHtml).not.toContain("<script>");
+    expect(rememberedHtml).toContain(
+      "&lt;script&gt;alert(&quot;saved&quot;)&lt;/script&gt;",
+    );
   });
 });

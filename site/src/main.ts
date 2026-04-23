@@ -23,16 +23,18 @@ async function bootstrap() {
     }
 
     const skills = (await response.json()) as PublishedSkill[];
+    let selectedRepoHandle: FileSystemDirectoryHandle | null = null;
 
     function render() {
       const route = parseRoute(window.location.hash);
-      const repoLabel = workbenchAvailable
+      const rememberedRepoLabel = workbenchAvailable
         ? window.localStorage.getItem(skillRepoNameKey) ?? undefined
         : undefined;
       const sidebar = workbenchAvailable
         ? renderWorkbenchPanel({
-            enabled: Boolean(repoLabel),
-            ...(repoLabel ? { repoLabel } : {}),
+            enabled: selectedRepoHandle !== null,
+            ...(selectedRepoHandle ? { repoLabel: selectedRepoHandle.name } : {}),
+            ...(rememberedRepoLabel ? { rememberedRepoLabel } : {}),
           })
         : "";
 
@@ -62,12 +64,19 @@ async function bootstrap() {
       const target = event.target as HTMLElement | null;
       if (!target || target.id !== "connect-repo") return;
 
-      const handle = await pickRepoRoot();
+      let handle: FileSystemDirectoryHandle;
+      try {
+        handle = await pickRepoRoot();
+      } catch {
+        return;
+      }
+
       if (!(await isValidRepoLayout(handle))) {
         window.alert("Selected directory is not a valid skill repository.");
         return;
       }
 
+      selectedRepoHandle = handle;
       window.localStorage.setItem(skillRepoNameKey, handle.name);
       render();
     });
