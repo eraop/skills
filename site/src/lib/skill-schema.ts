@@ -9,6 +9,10 @@ export type SkillSourceMeta = {
   rawFrontmatter: string;
 }
 
+export type SkillOverride = {
+  notes?: string[];
+}
+
 export type SkillDraft = {
   name: string;
   title: string;
@@ -17,6 +21,7 @@ export type SkillDraft = {
   tags: string[];
   triggers: string[];
   platforms: SkillPlatform[];
+  platformOverrides?: Partial<Record<SkillPlatform, SkillOverride>>;
   body: string;
   sourceMeta: SkillSourceMeta;
 }

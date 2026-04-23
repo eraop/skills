@@ -16,6 +16,57 @@ function isNotFoundError(error: unknown) {
   )
 }
 
+type RemovableDirectoryHandle = FileSystemDirectoryHandle & {
+  removeEntry?: (name: string, options?: { recursive?: boolean }) => Promise<void>;
+}
+
+type CreatedEntry = {
+  parent: RemovableDirectoryHandle;
+  name: string;
+}
+
+async function removeEntryIfPresent(
+  parent: RemovableDirectoryHandle,
+  name: string,
+  options?: { recursive?: boolean },
+) {
+  if (typeof parent.removeEntry !== "function") {
+    return
+  }
+
+  try {
+    await parent.removeEntry(name, options)
+  } catch (error) {
+    if (!isNotFoundError(error)) {
+      throw error
+    }
+  }
+}
+
+async function rollbackCreatedEntries(entries: CreatedEntry[]) {
+  for (const entry of [...entries].reverse()) {
+    await removeEntryIfPresent(entry.parent, entry.name, { recursive: true })
+  }
+}
+
+async function ensureDirectory(
+  parent: RemovableDirectoryHandle,
+  name: string,
+  createdEntries: CreatedEntry[],
+) {
+  try {
+    return await parent.getDirectoryHandle(name)
+  } catch (error) {
+    if (!isNotFoundError(error)) {
+      throw error
+    }
+
+    const created = await parent.getDirectoryHandle(name, { create: true })
+    createdEntries.push({ parent, name })
+    return created
+  }
+}
+
 async function writeTextFile(
   directory: FileSystemDirectoryHandle,
   name: string,
@@ -32,8 +83,9 @@ async function writeTextFile(
 }
 
 async function writeArtifactFile(
-  root: FileSystemDirectoryHandle,
+  root: RemovableDirectoryHandle,
   artifact: { path: string; contents: string },
+  createdEntries: CreatedEntry[],
 ) {
   const segments = artifact.path.split("/")
   const fileName = segments.pop()
@@ -41,9 +93,9 @@ async function writeArtifactFile(
     throw new Error("Artifact path must include a file name.")
   }
 
-  let directory = root
+  let directory: RemovableDirectoryHandle = root
   for (const segment of segments) {
-    directory = await directory.getDirectoryHandle(segment, { create: true })
+    directory = await ensureDirectory(directory, segment, createdEntries)
   }
 
   await writeTextFile(directory, fileName, artifact.contents)
@@ -84,17 +136,30 @@ export async function saveSkillDraft(
     tags: draft.tags,
     triggers: draft.triggers,
     platforms: draft.platforms,
+    ...(draft.platformOverrides
+      ? { platform_overrides: draft.platformOverrides }
+      : {}),
   })
   const skillYaml = YAML.stringify(document)
-  const draftDir = await skillsRoot.getDirectoryHandle(draft.name, { create: true })
+  const createdEntries: CreatedEntry[] = []
+  const draftDir = await ensureDirectory(
+    skillsRoot as RemovableDirectoryHandle,
+    draft.name,
+    createdEntries,
+  )
 
-  await writeTextFile(draftDir, "skill.yaml", skillYaml)
-  await writeTextFile(draftDir, "body.md", draft.body)
+  try {
+    await writeTextFile(draftDir, "skill.yaml", skillYaml)
+    await writeTextFile(draftDir, "body.md", draft.body)
 
-  const artifacts = buildArtifacts(draft)
-  for (const platform of draft.platforms) {
-    await writeArtifactFile(root, artifacts[platform])
+    const artifacts = buildArtifacts(draft)
+    for (const platform of draft.platforms) {
+      await writeArtifactFile(root as RemovableDirectoryHandle, artifacts[platform], createdEntries)
+    }
+
+    return artifacts
+  } catch (error) {
+    await rollbackCreatedEntries(createdEntries)
+    throw error
   }
-
-  return artifacts
 }

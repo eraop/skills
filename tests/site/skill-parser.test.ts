@@ -16,6 +16,10 @@ platforms:
   - codex
   - copilot
   - cursor
+platform_overrides:
+  codex:
+    notes:
+      - Keep this skill visible.
 ---
 This skill guides creation of distinctive interfaces.
 </skill>
@@ -34,7 +38,16 @@ triggers:
 platforms:
   - codex
   - copilot
-  - cursor`,
+  - cursor
+platform_overrides:
+  codex:
+    notes:
+      - Keep this skill visible.`,
+    });
+    expect(draft.platformOverrides).toEqual({
+      codex: {
+        notes: ["Keep this skill visible."],
+      },
     });
   });
 
@@ -67,5 +80,31 @@ Body
 </skill>
 `),
     ).toThrow();
+  });
+
+  it("preserves validated platform overrides on the parsed draft", () => {
+    const draft = parsePastedSkill(`
+<skill>
+---
+name: frontend-design
+description: Create distinctive interfaces.
+triggers:
+  - user asks to style a page
+platforms:
+  - codex
+platform_overrides:
+  codex:
+    notes:
+      - Keep this skill visible.
+---
+Body
+</skill>
+`);
+
+    expect(draft.platformOverrides).toEqual({
+      codex: {
+        notes: ["Keep this skill visible."],
+      },
+    });
   });
 });

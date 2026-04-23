@@ -49,27 +49,6 @@ async function bootstrap() {
     let skillDraft: SkillDraft | null = null;
     let skillValidationMessage = "Paste a complete wrapped skill to validate it locally.";
 
-    function toPublishedSkill(draft: SkillDraft): PublishedSkill {
-      const firstParagraph =
-        draft.body.replace(/^# .+\n+/m, "").split(/\n\s*\n/)[0]?.trim() ?? "";
-
-      return {
-        name: draft.name,
-        title: draft.title,
-        description: draft.description,
-        version: draft.version,
-        tags: [...draft.tags],
-        triggers: [...draft.triggers],
-        platforms: [...draft.platforms],
-        body: draft.body,
-        bodyExcerpt: firstParagraph,
-        artifacts: draft.platforms.map((platform) => ({
-          platform,
-          entryFile: platform === "copilot" ? "README.md" : "SKILL.md",
-        })),
-      };
-    }
-
     function setSkillSource(source: string) {
       skillSource = source;
 

@@ -7,6 +7,7 @@ class MemoryFileHandle {
   constructor(
     public name: string,
     private contents = "",
+    private onWrite?: (value: string) => void,
   ) {}
 
   async getFile() {
@@ -19,6 +20,7 @@ class MemoryFileHandle {
   async createWritable() {
     return {
       write: async (value: string) => {
+        this.onWrite?.(value);
         this.contents = value;
       },
       close: async () => {},
@@ -35,7 +37,10 @@ class MemoryDirectoryHandle {
   private directories = new Map<string, MemoryDirectoryHandle>();
   private files = new Map<string, MemoryFileHandle>();
 
-  constructor(public name: string) {}
+  constructor(
+    public name: string,
+    private fileFactory?: (name: string) => MemoryFileHandle,
+  ) {}
 
   async getDirectoryHandle(name: string, options?: { create?: boolean }) {
     const existing = this.directories.get(name);
@@ -44,7 +49,7 @@ class MemoryDirectoryHandle {
     }
 
     if (options?.create) {
-      const created = new MemoryDirectoryHandle(name);
+      const created = new MemoryDirectoryHandle(name, this.fileFactory);
       this.directories.set(name, created);
       return created;
     }
@@ -61,7 +66,7 @@ class MemoryDirectoryHandle {
     }
 
     if (options?.create) {
-      const created = new MemoryFileHandle(name);
+      const created = this.fileFactory?.(name) ?? new MemoryFileHandle(name);
       this.files.set(name, created);
       return created;
     }
@@ -84,10 +89,33 @@ class MemoryDirectoryHandle {
   hasDirectory(name: string) {
     return this.directories.has(name);
   }
+
+  async removeEntry(name: string, options?: { recursive?: boolean }) {
+    if (this.files.delete(name)) {
+      return;
+    }
+
+    if (this.directories.has(name)) {
+      if (!options?.recursive) {
+        throw new Error(`Directory ${name} requires recursive removal.`);
+      }
+
+      this.directories.delete(name);
+      return;
+    }
+
+    throw Object.assign(new Error(`Missing entry: ${name}`), {
+      name: "NotFoundError",
+    });
+  }
+
+  readFile(name: string) {
+    return this.files.get(name)?.read();
+  }
 }
 
-async function createRepoRoot() {
-  const root = new MemoryDirectoryHandle("repo");
+async function createRepoRoot(fileFactory?: (name: string) => MemoryFileHandle) {
+  const root = new MemoryDirectoryHandle("repo", fileFactory);
   await root.getFileHandle("package.json", { create: true });
   await root.getDirectoryHandle("skills", { create: true });
   return root;
@@ -115,5 +143,65 @@ describe("saveSkillDraft", () => {
     ).rejects.toThrow();
 
     expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
+  });
+
+  it("preserves platform overrides when saving a parsed draft", async () => {
+    const root = await createRepoRoot();
+    const skillsRoot = await root.getDirectoryHandle("skills");
+
+    await saveSkillDraft(root as never, {
+      name: "frontend-design",
+      title: "Frontend Design",
+      description: "Create distinctive interfaces.",
+      version: "0.1.0",
+      tags: [],
+      triggers: ["user asks to style a page"],
+      platforms: ["codex"],
+      platformOverrides: {
+        codex: {
+          notes: ["Keep this skill visible."],
+        },
+      },
+      body: "This skill guides creation of distinctive interfaces.",
+      sourceMeta: {
+        rawFrontmatter: "name: frontend-design",
+      },
+    });
+
+    const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
+    expect(draftDir.readFile("skill.yaml")).toContain("platform_overrides:");
+    expect(draftDir.readFile("skill.yaml")).toContain("Keep this skill visible.");
+  });
+
+  it("rolls back created files when artifact generation fails mid-save", async () => {
+    const root = await createRepoRoot((name) =>
+      new MemoryFileHandle(name, "", (value) => {
+        if (name === "README.md" && value.includes("Frontend Design")) {
+          throw new Error("Simulated artifact write failure.");
+        }
+      }),
+    );
+    const skillsRoot = await root.getDirectoryHandle("skills");
+
+    await expect(
+      saveSkillDraft(root as never, {
+        name: "frontend-design",
+        title: "Frontend Design",
+        description: "Create distinctive interfaces.",
+        version: "0.1.0",
+        tags: [],
+        triggers: ["user asks to style a page"],
+        platforms: ["codex", "copilot", "cursor"],
+        body: "This skill guides creation of distinctive interfaces.",
+        sourceMeta: {
+          rawFrontmatter: "name: frontend-design",
+        },
+      }),
+    ).rejects.toThrow("Simulated artifact write failure.");
+
+    expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
+    await expect(root.getDirectoryHandle("dist")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
   });
 });

@@ -67,7 +67,7 @@ export function parsePastedSkill(source: string): SkillDraft {
     throw new Error("Skill triggers must not be empty.")
   }
 
-  parseSkillDocument({
+  const parsedDocument = parseSkillDocument({
     name,
     title: String(documentRecord.title ?? "").trim() || formatSkillTitle(name),
     description,
@@ -77,21 +77,25 @@ export function parsePastedSkill(source: string): SkillDraft {
       : [],
     triggers,
     platforms,
+    ...(documentRecord.platform_overrides
+      ? { platform_overrides: documentRecord.platform_overrides }
+      : {}),
   })
 
   const wrapperNameMatch = normalized.match(/<name>([\s\S]*?)<\/name>/)
   const wrapperPathMatch = normalized.match(/<path>([\s\S]*?)<\/path>/)
 
   return {
-    name,
-    title: String(documentRecord.title ?? "").trim() || formatSkillTitle(name),
-    description,
-    version: String(documentRecord.version ?? "0.1.0").trim() || "0.1.0",
-    tags: Array.isArray(documentRecord.tags)
-      ? (documentRecord.tags as unknown[]).map((value) => String(value))
-      : [],
-    triggers,
-    platforms,
+    name: parsedDocument.name,
+    title: parsedDocument.title,
+    description: parsedDocument.description,
+    version: parsedDocument.version,
+    tags: parsedDocument.tags,
+    triggers: parsedDocument.triggers,
+    platforms: parsedDocument.platforms,
+    ...(parsedDocument.platform_overrides
+      ? { platformOverrides: parsedDocument.platform_overrides }
+      : {}),
     body,
     sourceMeta: {
       ...(wrapperNameMatch?.[1]?.trim()
