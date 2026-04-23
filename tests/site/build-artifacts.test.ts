@@ -12,6 +12,9 @@ describe("buildArtifacts", () => {
       triggers: [],
       platforms: ["codex", "copilot", "cursor"],
       body: "This skill guides creation of distinctive interfaces.",
+      sourceMeta: {
+        rawFrontmatter: "name: frontend-design",
+      },
     });
 
     expect(outputs.codex.path).toBe("dist/codex/frontend-design/SKILL.md");

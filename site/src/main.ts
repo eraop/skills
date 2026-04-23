@@ -1,9 +1,11 @@
 import "./styles.css";
 import { renderArchiveShell } from "./components/archive-shell.js";
 import { renderWorkbenchPanel } from "./components/workbench-panel.js";
+import { scanRepoSkills } from "./lib/live-repo.js";
 import { supportsWorkbenchMode } from "./lib/mode.js";
 import { parsePastedSkill } from "./lib/skill-parser.js";
 import { isValidRepoLayout, pickRepoRoot } from "./lib/repo-fs.js";
+import { loadStoredRepoHandle, persistRepoHandle } from "./lib/repo-handle-store.js";
 import type { SkillDraft } from "./lib/skill-schema.js";
 import { saveSkillDraft } from "./lib/workbench-actions.js";
 import { renderDetailPage } from "./pages/detail.js";
@@ -17,6 +19,21 @@ if (!root) throw new Error("Missing #app root");
 const appRoot = root;
 const workbenchAvailable = supportsWorkbenchMode();
 const skillRepoNameKey = "skill-repo-name";
+
+async function canReuseStoredHandle(handle: FileSystemDirectoryHandle) {
+  const permissionHandle = handle as FileSystemDirectoryHandle & {
+    queryPermission?: (descriptor: { mode: "readwrite" }) => Promise<PermissionState>;
+  }
+
+  if (typeof permissionHandle.queryPermission === "function") {
+    const permission = await permissionHandle.queryPermission({ mode: "readwrite" })
+    if (permission !== "granted") {
+      return false
+    }
+  }
+
+  return isValidRepoLayout(handle)
+}
 
 async function bootstrap() {
   try {
@@ -118,6 +135,10 @@ async function bootstrap() {
       }
     }
 
+    async function syncSkillsFromRepo(handle: FileSystemDirectoryHandle) {
+      skills = await scanRepoSkills(handle)
+    }
+
     function render() {
       const route = parseRoute(window.location.hash);
       const rememberedRepoLabel = workbenchAvailable
@@ -178,6 +199,16 @@ async function bootstrap() {
       }
 
       if (target.id === "refresh-skills") {
+        if (selectedRepoHandle) {
+          try {
+            await syncSkillsFromRepo(selectedRepoHandle)
+          } catch (error) {
+            window.alert(
+              error instanceof Error ? error.message : "Could not refresh live skills.",
+            );
+          }
+        }
+
         render();
         return;
       }
@@ -215,10 +246,7 @@ async function bootstrap() {
 
         try {
           await saveSkillDraft(selectedRepoHandle, draftToSave);
-          skills = [
-            ...skills.filter((entry) => entry.name !== draftToSave.name),
-            toPublishedSkill(draftToSave),
-          ];
+          await syncSkillsFromRepo(selectedRepoHandle);
           skillEditorOpen = false;
           setSkillSource("");
           window.location.hash = `#/skill/${draftToSave.name}`;
@@ -246,8 +274,14 @@ async function bootstrap() {
       }
 
       selectedRepoHandle = handle;
+      await syncSkillsFromRepo(handle);
       skillEditorOpen = false;
       window.localStorage.setItem(skillRepoNameKey, handle.name);
+      try {
+        await persistRepoHandle(handle);
+      } catch {
+        // Ignore persistence failures after a successful live connection.
+      }
       render();
     });
 
@@ -258,6 +292,19 @@ async function bootstrap() {
       setSkillSource(target.value);
       syncSkillEditor();
     });
+
+    if (workbenchAvailable) {
+      try {
+        const restoredHandle = await loadStoredRepoHandle();
+        if (restoredHandle && (await canReuseStoredHandle(restoredHandle))) {
+          selectedRepoHandle = restoredHandle;
+          await syncSkillsFromRepo(restoredHandle);
+          window.localStorage.setItem(skillRepoNameKey, restoredHandle.name);
+        }
+      } catch {
+        // Ignore restore errors and fall back to static archive data.
+      }
+    }
 
     window.addEventListener("hashchange", render);
     render();

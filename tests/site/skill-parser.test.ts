@@ -6,9 +6,12 @@ describe("parsePastedSkill", () => {
     const draft = parsePastedSkill(`
 <skill>
 <name>frontend-design</name>
+<path>/some/path/SKILL.md</path>
 ---
 name: frontend-design
 description: Create distinctive interfaces.
+triggers:
+  - user asks to style a page
 platforms:
   - codex
   - copilot
@@ -21,5 +24,48 @@ This skill guides creation of distinctive interfaces.
     expect(draft.name).toBe("frontend-design");
     expect(draft.platforms).toEqual(["codex", "copilot", "cursor"]);
     expect(draft.body).toContain("This skill guides");
+    expect(draft.sourceMeta).toEqual({
+      wrapperName: "frontend-design",
+      wrapperPath: "/some/path/SKILL.md",
+      rawFrontmatter: `name: frontend-design
+description: Create distinctive interfaces.
+triggers:
+  - user asks to style a page
+platforms:
+  - codex
+  - copilot
+  - cursor`,
+    });
+  });
+
+  it("rejects an explicitly empty platform list", () => {
+    expect(() =>
+      parsePastedSkill(`
+<skill>
+---
+name: frontend-design
+description: Create distinctive interfaces.
+triggers:
+  - user asks to style a page
+platforms: []
+---
+Body
+</skill>
+`),
+    ).toThrow();
+  });
+
+  it("requires at least one trigger before the draft is considered valid", () => {
+    expect(() =>
+      parsePastedSkill(`
+<skill>
+---
+name: frontend-design
+description: Create distinctive interfaces.
+---
+Body
+</skill>
+`),
+    ).toThrow();
   });
 });

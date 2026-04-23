@@ -1,4 +1,5 @@
 import YAML from "yaml"
+import { parseSkillDocument } from "../../../packages/core/src/schema.js"
 import {
   formatSkillTitle,
   isSkillPlatform,
@@ -29,21 +30,24 @@ export function parsePastedSkill(source: string): SkillDraft {
     throw new Error("Skill body is required.")
   }
 
-  const name = String((document as Record<string, unknown>).name ?? "").trim()
+  const documentRecord = document as Record<string, unknown>
+  const name = String(documentRecord.name ?? "").trim()
   if (!SKILL_NAME_PATTERN.test(name)) {
     throw new Error(
       "Skill name must use lowercase letters, digits, and hyphens only.",
     )
   }
 
-  const description = String(
-    (document as Record<string, unknown>).description ?? "",
-  ).trim()
+  const description = String(documentRecord.description ?? "").trim()
   if (!description) {
     throw new Error("Skill description is required.")
   }
 
-  const rawPlatforms = (document as Record<string, unknown>).platforms
+  const rawPlatforms = documentRecord.platforms
+  if (Array.isArray(rawPlatforms) && rawPlatforms.length === 0) {
+    throw new Error("Skill platforms must include at least one platform when provided.")
+  }
+
   const platforms =
     Array.isArray(rawPlatforms) && rawPlatforms.length > 0
       ? rawPlatforms.map((value) => String(value).trim())
@@ -53,22 +57,50 @@ export function parsePastedSkill(source: string): SkillDraft {
     throw new Error("Skill platforms must be codex, copilot, or cursor.")
   }
 
+  const rawTriggers = documentRecord.triggers
+  if (!Array.isArray(rawTriggers) || rawTriggers.length === 0) {
+    throw new Error("Skill triggers must include at least one item.")
+  }
+
+  const triggers = rawTriggers.map((value) => String(value).trim())
+  if (triggers.some((value) => value.length === 0)) {
+    throw new Error("Skill triggers must not be empty.")
+  }
+
+  parseSkillDocument({
+    name,
+    title: String(documentRecord.title ?? "").trim() || formatSkillTitle(name),
+    description,
+    version: String(documentRecord.version ?? "0.1.0").trim() || "0.1.0",
+    tags: Array.isArray(documentRecord.tags)
+      ? documentRecord.tags.map((value) => String(value))
+      : [],
+    triggers,
+    platforms,
+  })
+
+  const wrapperNameMatch = normalized.match(/<name>([\s\S]*?)<\/name>/)
+  const wrapperPathMatch = normalized.match(/<path>([\s\S]*?)<\/path>/)
+
   return {
     name,
-    title: String((document as Record<string, unknown>).title ?? "").trim() || formatSkillTitle(name),
+    title: String(documentRecord.title ?? "").trim() || formatSkillTitle(name),
     description,
-    version: String((document as Record<string, unknown>).version ?? "0.1.0").trim() || "0.1.0",
-    tags: Array.isArray((document as Record<string, unknown>).tags)
-      ? ((document as Record<string, unknown>).tags as unknown[]).map((value) =>
-          String(value),
-        )
+    version: String(documentRecord.version ?? "0.1.0").trim() || "0.1.0",
+    tags: Array.isArray(documentRecord.tags)
+      ? (documentRecord.tags as unknown[]).map((value) => String(value))
       : [],
-    triggers: Array.isArray((document as Record<string, unknown>).triggers)
-      ? ((document as Record<string, unknown>).triggers as unknown[]).map((value) =>
-          String(value),
-        )
-      : [],
+    triggers,
     platforms,
     body,
+    sourceMeta: {
+      ...(wrapperNameMatch?.[1]?.trim()
+        ? { wrapperName: wrapperNameMatch[1].trim() }
+        : {}),
+      ...(wrapperPathMatch?.[1]?.trim()
+        ? { wrapperPath: wrapperPathMatch[1].trim() }
+        : {}),
+      rawFrontmatter: documentSource,
+    },
   }
 }

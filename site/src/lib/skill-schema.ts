@@ -3,6 +3,12 @@ export const SKILL_NAME_PATTERN = /^[a-z0-9-]+$/
 
 export type SkillPlatform = (typeof VALID_PLATFORMS)[number]
 
+export type SkillSourceMeta = {
+  wrapperName?: string;
+  wrapperPath?: string;
+  rawFrontmatter: string;
+}
+
 export type SkillDraft = {
   name: string;
   title: string;
@@ -12,6 +18,7 @@ export type SkillDraft = {
   triggers: string[];
   platforms: SkillPlatform[];
   body: string;
+  sourceMeta: SkillSourceMeta;
 }
 
 export function isSkillPlatform(value: unknown): value is SkillPlatform {

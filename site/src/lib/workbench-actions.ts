@@ -1,7 +1,20 @@
 import YAML from "yaml"
+import { parseSkillDocument } from "../../../packages/core/src/schema.js"
 import { buildArtifacts, type BuildArtifactsResult } from "./build-artifacts.js"
 import { isValidRepoLayout } from "./repo-fs.js"
 import type { SkillDraft } from "./skill-schema.js"
+
+function isNotFoundError(error: unknown) {
+  return (
+    (typeof DOMException !== "undefined" &&
+      error instanceof DOMException &&
+      error.name === "NotFoundError") ||
+    (typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      error.name === "NotFoundError")
+  )
+}
 
 async function writeTextFile(
   directory: FileSystemDirectoryHandle,
@@ -44,7 +57,7 @@ async function assertSkillDoesNotExist(
     await skillsRoot.getDirectoryHandle(name)
     throw new Error(`Skill "${name}" already exists.`)
   } catch (error) {
-    if (error instanceof DOMException && error.name === "NotFoundError") {
+    if (isNotFoundError(error)) {
       return
     }
 
@@ -63,8 +76,7 @@ export async function saveSkillDraft(
   const skillsRoot = await root.getDirectoryHandle("skills")
   await assertSkillDoesNotExist(skillsRoot, draft.name)
 
-  const draftDir = await skillsRoot.getDirectoryHandle(draft.name, { create: true })
-  const skillYaml = YAML.stringify({
+  const document = parseSkillDocument({
     name: draft.name,
     title: draft.title,
     description: draft.description,
@@ -73,6 +85,8 @@ export async function saveSkillDraft(
     triggers: draft.triggers,
     platforms: draft.platforms,
   })
+  const skillYaml = YAML.stringify(document)
+  const draftDir = await skillsRoot.getDirectoryHandle(draft.name, { create: true })
 
   await writeTextFile(draftDir, "skill.yaml", skillYaml)
   await writeTextFile(draftDir, "body.md", draft.body)
