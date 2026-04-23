@@ -33,6 +33,10 @@ platform_overrides:
       { platform: "cursor", entryFile: "SKILL.md" },
     ]);
     expect(record.bodyExcerpt).toContain("Invoke relevant skills first.");
-    expect(record).not.toHaveProperty("platform_overrides");
+    expect(record.platformOverrides).toEqual({
+      codex: {
+        notes: ["Keep this skill visible."],
+      },
+    });
   });
 });

@@ -18,6 +18,9 @@ export function parseArchiveSkill(args: {
     tags: [...document.tags],
     triggers: [...document.triggers],
     platforms: [...document.platforms],
+    ...(document.platform_overrides
+      ? { platformOverrides: document.platform_overrides }
+      : {}),
     body: args.body,
     bodyExcerpt: firstParagraph,
     artifacts: document.platforms.map((platform) => ({

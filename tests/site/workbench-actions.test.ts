@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { scanRepoSkills } from "../../site/src/lib/live-repo.js";
 import {
   deleteSkill,
   rebuildSkill,
@@ -363,5 +364,28 @@ describe("rebuildSkill", () => {
     await expect(cursorRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
       name: "NotFoundError",
     });
+  });
+
+  it("preserves platform overrides when rebuilding a scanned skill", async () => {
+    const root = await createRepoRoot();
+
+    await saveFrontendDesign(root, {
+      platforms: ["codex"],
+      platformOverrides: {
+        codex: {
+          notes: ["Keep this skill visible."],
+        },
+      },
+    });
+
+    const scanned = await scanRepoSkills(root as never);
+
+    await rebuildSkill(root as never, scanned[0]!);
+
+    const skillsRoot = await root.getDirectoryHandle("skills");
+    const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
+
+    expect(draftDir.readFile("skill.yaml")).toContain("platform_overrides:");
+    expect(draftDir.readFile("skill.yaml")).toContain("Keep this skill visible.");
   });
 });

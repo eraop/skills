@@ -3,6 +3,7 @@ import { parseSkillDocument } from "../../../packages/core/src/schema.js"
 import { buildArtifacts, type BuildArtifactsResult } from "./build-artifacts.js"
 import { isValidRepoLayout, removeDirectoryIfPresent } from "./repo-fs.js"
 import type { SkillDraft } from "./skill-schema.js"
+import type { PublishedSkill } from "./types.js"
 
 function isNotFoundError(error: unknown) {
   return (
@@ -261,27 +262,26 @@ export async function deleteSkill(
   ])
 }
 
-type RebuildSkillDraft = {
-  name: string
-  title: string
-  description: string
-  version: string
-  tags: string[]
-  triggers: string[]
-  platforms: Array<"codex" | "copilot" | "cursor">
-  body: string
-}
-
 export async function rebuildSkill(
   root: FileSystemDirectoryHandle,
-  draft: RebuildSkillDraft,
+  skill: PublishedSkill,
 ) {
-  await deleteSkill(root, draft.name)
+  await deleteSkill(root, skill.name)
 
   return saveSkillDraft(root, {
-    ...draft,
+    name: skill.name,
+    title: skill.title,
+    description: skill.description,
+    version: skill.version,
+    tags: [...skill.tags],
+    triggers: [...skill.triggers],
+    platforms: [...skill.platforms],
+    ...(skill.platformOverrides
+      ? { platformOverrides: skill.platformOverrides }
+      : {}),
+    body: skill.body,
     sourceMeta: {
-      rawFrontmatter: `name: ${draft.name}`,
+      rawFrontmatter: `name: ${skill.name}`,
     },
   })
 }

@@ -118,19 +118,6 @@ async function bootstrap() {
       skills = await scanRepoSkills(handle)
     }
 
-    function buildRebuildDraft(skill: PublishedSkill) {
-      return {
-        name: skill.name,
-        title: skill.title,
-        description: skill.description,
-        version: skill.version,
-        tags: [...skill.tags],
-        triggers: [...skill.triggers],
-        platforms: [...skill.platforms],
-        body: skill.body,
-      }
-    }
-
     function render() {
       const route = parseRoute(window.location.hash);
       const rememberedRepoLabel = workbenchAvailable
@@ -270,7 +257,7 @@ async function bootstrap() {
         }
 
         try {
-          await rebuildSkill(selectedRepoHandle, buildRebuildDraft(liveSkill))
+          await rebuildSkill(selectedRepoHandle, liveSkill)
           await syncSkillsFromRepo(selectedRepoHandle)
           render()
         } catch (error) {
