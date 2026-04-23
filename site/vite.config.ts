@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  base: "./",
   root: rootDir,
   publicDir: path.resolve(rootDir, "public"),
   build: {
