@@ -344,6 +344,8 @@ describe("rebuildSkill", () => {
       triggers: ["user asks to rebuild a skill"],
       platforms: ["codex"],
       body: "This rebuilt skill only targets Codex.",
+      bodyExcerpt: "This rebuilt skill only targets Codex.",
+      artifacts: [{ platform: "codex", entryFile: "SKILL.md" }],
     });
 
     const skillsRoot = await root.getDirectoryHandle("skills");
