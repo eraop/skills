@@ -29,7 +29,7 @@ function createFakeIndexedDb() {
         objectStoreNames: { contains: (name: string) => boolean };
         createObjectStore: (name: string) => void;
         transaction: (
-          names: string[],
+          names: [string, ...string[]],
           mode: "readonly" | "readwrite",
         ) => {
           objectStore: (name: string) => {
@@ -49,7 +49,7 @@ function createFakeIndexedDb() {
               stores.set(name, new Map());
             }
           },
-          transaction: ([storeName]) => ({
+          transaction: ([storeName]: [string, ...string[]]) => ({
             objectStore: () => ({
               put: (value: unknown, key: string) => {
                 const putRequest = createRequest<unknown>();

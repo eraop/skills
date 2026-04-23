@@ -9,8 +9,9 @@ export function parseRoute(hash: string): Route {
   }
 
   const match = hash.match(/^#\/skill\/([a-z0-9-]+)$/);
-  if (match) {
-    return { kind: "detail", skillName: match[1] };
+  const skillName = match?.[1];
+  if (skillName) {
+    return { kind: "detail", skillName };
   }
 
   return { kind: "not-found" };

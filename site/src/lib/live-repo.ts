@@ -11,6 +11,12 @@ async function readTextFile(
   return file.text()
 }
 
+function isDirectoryHandle(
+  handle: FileSystemHandle,
+): handle is FileSystemDirectoryHandle {
+  return handle.kind === "directory"
+}
+
 export async function scanRepoSkills(
   root: FileSystemDirectoryHandle,
 ): Promise<PublishedSkill[]> {
@@ -22,7 +28,7 @@ export async function scanRepoSkills(
   const skills: PublishedSkill[] = []
 
   for await (const entry of skillsRoot.values()) {
-    if (entry.kind !== "directory") {
+    if (!isDirectoryHandle(entry)) {
       continue
     }
 
