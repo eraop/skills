@@ -17,12 +17,22 @@ platforms:
   - codex
   - copilot
   - cursor
+platform_overrides:
+  codex:
+    notes:
+      - Keep this skill visible.
 `,
       body: "# Using Superpowers\n\nInvoke relevant skills first.\n",
     });
 
     expect(record.name).toBe("using-superpowers");
     expect(record.platforms).toEqual(["codex", "copilot", "cursor"]);
+    expect(record.artifacts).toEqual([
+      { platform: "codex", entryFile: "SKILL.md" },
+      { platform: "copilot", entryFile: "README.md" },
+      { platform: "cursor", entryFile: "SKILL.md" },
+    ]);
     expect(record.bodyExcerpt).toContain("Invoke relevant skills first.");
+    expect(record).not.toHaveProperty("platform_overrides");
   });
 });

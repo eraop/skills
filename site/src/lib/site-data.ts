@@ -1,18 +1,23 @@
 import YAML from "yaml";
+import { parseSkillDocument } from "../../../packages/core/src/schema.js";
 import type { PublishedSkill } from "./types.js";
-
-type SkillDocument = Omit<PublishedSkill, "body" | "bodyExcerpt" | "artifacts">;
 
 export function parseArchiveSkill(args: {
   documentSource: string;
   body: string;
 }): PublishedSkill {
-  const document = YAML.parse(args.documentSource) as SkillDocument;
+  const document = parseSkillDocument(YAML.parse(args.documentSource));
   const firstParagraph =
     args.body.replace(/^# .+\n+/m, "").split(/\n\s*\n/)[0]?.trim() ?? "";
 
   return {
-    ...document,
+    name: document.name,
+    title: document.title,
+    description: document.description,
+    version: document.version,
+    tags: [...document.tags],
+    triggers: [...document.triggers],
+    platforms: [...document.platforms],
     body: args.body,
     bodyExcerpt: firstParagraph,
     artifacts: document.platforms.map((platform) => ({

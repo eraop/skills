@@ -21,5 +21,7 @@ const skills = await Promise.all(
     }),
 );
 
+skills.sort((left, right) => left.name.localeCompare(right.name));
+
 await mkdir(path.dirname(outputPath), { recursive: true });
 await writeFile(outputPath, JSON.stringify(skills, null, 2), "utf8");
