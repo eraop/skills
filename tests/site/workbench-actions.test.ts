@@ -239,4 +239,39 @@ describe("saveSkillDraft", () => {
     expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
     expect(artifactRoot.readFile("SKILL.md")).toBe("existing artifact contents");
   });
+
+  it("ignores residual artifacts for platforms that are not selected for this save", async () => {
+    const root = await createRepoRoot();
+    const skillsRoot = await root.getDirectoryHandle("skills");
+    const distRoot = await root.getDirectoryHandle("dist", { create: true });
+    const copilotRoot = await distRoot.getDirectoryHandle("copilot", { create: true });
+    const artifactRoot = await copilotRoot.getDirectoryHandle("frontend-design", {
+      create: true,
+    });
+    const existingArtifact = await artifactRoot.getFileHandle("README.md", {
+      create: true,
+    });
+    const writable = await existingArtifact.createWritable();
+    await writable.write("existing copilot artifact");
+    await writable.close();
+
+    await expect(
+      saveSkillDraft(root as never, {
+        name: "frontend-design",
+        title: "Frontend Design",
+        description: "Create distinctive interfaces.",
+        version: "0.1.0",
+        tags: [],
+        triggers: ["user asks to style a page"],
+        platforms: ["codex"],
+        body: "This skill guides creation of distinctive interfaces.",
+        sourceMeta: {
+          rawFrontmatter: "name: frontend-design",
+        },
+      }),
+    ).resolves.toBeDefined();
+
+    expect(skillsRoot.hasDirectory("frontend-design")).toBe(true);
+    expect(artifactRoot.readFile("README.md")).toBe("existing copilot artifact");
+  });
 });

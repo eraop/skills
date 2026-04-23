@@ -122,9 +122,9 @@ async function getExistingParentDirectory(
 
 async function assertArtifactTargetsDoNotExist(
   root: FileSystemDirectoryHandle,
-  artifacts: BuildArtifactsResult,
+  artifacts: Array<BuildArtifactsResult[keyof BuildArtifactsResult]>,
 ) {
-  for (const artifact of Object.values(artifacts)) {
+  for (const artifact of artifacts) {
     const segments = artifact.path.split("/")
     const fileName = segments.pop()
     const artifactDirectoryName = segments.pop()
@@ -222,7 +222,10 @@ export async function saveSkillDraft(
       : {}),
   })
   const artifacts = buildArtifacts(draft)
-  await assertArtifactTargetsDoNotExist(root, artifacts)
+  await assertArtifactTargetsDoNotExist(
+    root,
+    draft.platforms.map((platform) => artifacts[platform]),
+  )
   const skillYaml = YAML.stringify(document)
   const createdEntries: CreatedEntry[] = []
   const draftDir = await ensureDirectory(
