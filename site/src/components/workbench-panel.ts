@@ -4,6 +4,7 @@ export function renderWorkbenchPanel(args: {
   enabled: boolean;
   repoLabel?: string;
   rememberedRepoLabel?: string;
+  editorOpen?: boolean;
 }) {
   if (!args.enabled) {
     const rememberedRepoLabel = args.rememberedRepoLabel
@@ -25,12 +26,14 @@ export function renderWorkbenchPanel(args: {
   }
 
   const repoLabel = escapeHtml(args.repoLabel ?? "selected repository");
+  const addSkillLabel = args.editorOpen ? "Close Editor" : "Add Skill"
 
   return `
     <aside class="workbench-panel">
       <p class="eyebrow">Workbench</p>
       <p>Connected to ${repoLabel}.</p>
-      <button id="add-skill" type="button">Add Skill</button>
+      <p>Paste a full wrapped skill to create source files and local artifacts.</p>
+      <button id="add-skill" type="button">${addSkillLabel}</button>
       <button id="refresh-skills" type="button">Refresh</button>
     </aside>
   `;
