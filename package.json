@@ -8,11 +8,19 @@
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
     "test": "vitest run",
-    "lint": "tsc -p tsconfig.json --pretty false"
+    "lint": "tsc -p tsconfig.json --pretty false",
+    "site:data": "node --import tsx scripts/generate-site-data.ts",
+    "site:dev": "npm run site:data && vite --config site/vite.config.ts",
+    "site:build": "npm run site:data && vite build --config site/vite.config.ts",
+    "site:preview": "vite preview --config site/vite.config.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "marked": "^15.0.12",
+    "tsx": "^4.19.2",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.2"
+    "vite": "^6.3.5",
+    "vitest": "^3.1.2",
+    "yaml": "^2.8.0"
   }
 }
