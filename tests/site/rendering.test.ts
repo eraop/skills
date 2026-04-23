@@ -53,6 +53,28 @@ describe("site rendering", () => {
     expect(html).toContain("<em>allowed</em>");
   });
 
+  it("shows local rebuild and delete actions only when a live repo is connected", () => {
+    const connectedHtml = renderDetailPage(makeSkill(), {
+      workbenchAvailable: true,
+      repoConnected: true,
+    });
+    const readOnlyHtml = renderDetailPage(makeSkill(), {
+      workbenchAvailable: true,
+      repoConnected: false,
+    });
+
+    expect(connectedHtml).toContain('id="rebuild-skill"');
+    expect(connectedHtml).toContain('id="delete-skill"');
+    expect(connectedHtml).toContain(
+      "This local view can rebuild or delete the connected skill.",
+    );
+    expect(connectedHtml).toContain(
+      "Delete removes skills/using-superpowers and all generated dist artifacts for this skill.",
+    );
+    expect(readOnlyHtml).not.toContain('id="rebuild-skill"');
+    expect(readOnlyHtml).not.toContain('id="delete-skill"');
+  });
+
   it("escapes repository labels in the workbench panel", () => {
     const connectedHtml = renderWorkbenchPanel({
       enabled: true,

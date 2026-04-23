@@ -7,7 +7,7 @@ import { parsePastedSkill } from "./lib/skill-parser.js";
 import { isValidRepoLayout, pickRepoRoot } from "./lib/repo-fs.js";
 import { loadStoredRepoHandle, persistRepoHandle } from "./lib/repo-handle-store.js";
 import type { SkillDraft } from "./lib/skill-schema.js";
-import { saveSkillDraft } from "./lib/workbench-actions.js";
+import { deleteSkill, rebuildSkill, saveSkillDraft } from "./lib/workbench-actions.js";
 import { renderDetailPage } from "./pages/detail.js";
 import { renderHomePage } from "./pages/home.js";
 import { renderNotFoundPage } from "./pages/not-found.js";
@@ -118,6 +118,19 @@ async function bootstrap() {
       skills = await scanRepoSkills(handle)
     }
 
+    function buildRebuildDraft(skill: PublishedSkill) {
+      return {
+        name: skill.name,
+        title: skill.title,
+        description: skill.description,
+        version: skill.version,
+        tags: [...skill.tags],
+        triggers: [...skill.triggers],
+        platforms: [...skill.platforms],
+        body: skill.body,
+      }
+    }
+
     function render() {
       const route = parseRoute(window.location.hash);
       const rememberedRepoLabel = workbenchAvailable
@@ -148,7 +161,10 @@ async function bootstrap() {
         const skill = skills.find((entry) => entry.name === route.skillName);
         appRoot.innerHTML = renderArchiveShell(
           skill
-            ? renderDetailPage(skill, { workbenchAvailable })
+            ? renderDetailPage(skill, {
+                workbenchAvailable,
+                repoConnected: selectedRepoHandle !== null,
+              })
             : renderNotFoundPage(),
           sidebar,
         );
@@ -236,6 +252,62 @@ async function bootstrap() {
         }
 
         return;
+      }
+
+      if (target.id === "rebuild-skill") {
+        if (!selectedRepoHandle) {
+          window.alert("Connect a local repository before rebuilding a skill.");
+          return;
+        }
+
+        const name = target.dataset.skill
+        if (!name) return
+
+        const liveSkill = skills.find((entry) => entry.name === name)
+        if (!liveSkill) {
+          window.alert(`Could not find live skill "${name}" to rebuild.`)
+          return
+        }
+
+        try {
+          await rebuildSkill(selectedRepoHandle, buildRebuildDraft(liveSkill))
+          await syncSkillsFromRepo(selectedRepoHandle)
+          render()
+        } catch (error) {
+          window.alert(
+            error instanceof Error ? error.message : "Could not rebuild the skill.",
+          )
+        }
+
+        return
+      }
+
+      if (target.id === "delete-skill") {
+        if (!selectedRepoHandle) {
+          window.alert("Connect a local repository before deleting a skill.");
+          return;
+        }
+
+        const name = target.dataset.skill
+        if (!name) return
+
+        const confirmed = window.confirm(
+          `Delete skills/${name} and dist artifacts for ${name}?`,
+        )
+        if (!confirmed) return
+
+        try {
+          await deleteSkill(selectedRepoHandle, name)
+          await syncSkillsFromRepo(selectedRepoHandle)
+          window.location.hash = "#/"
+          render()
+        } catch (error) {
+          window.alert(
+            error instanceof Error ? error.message : "Could not delete the skill.",
+          )
+        }
+
+        return
       }
 
       if (target.id !== "connect-repo") return;

@@ -1,7 +1,7 @@
 import YAML from "yaml"
 import { parseSkillDocument } from "../../../packages/core/src/schema.js"
 import { buildArtifacts, type BuildArtifactsResult } from "./build-artifacts.js"
-import { isValidRepoLayout } from "./repo-fs.js"
+import { isValidRepoLayout, removeDirectoryIfPresent } from "./repo-fs.js"
 import type { SkillDraft } from "./skill-schema.js"
 
 function isNotFoundError(error: unknown) {
@@ -247,4 +247,41 @@ export async function saveSkillDraft(
     await rollbackCreatedEntries(createdEntries)
     throw error
   }
+}
+
+export async function deleteSkill(
+  root: FileSystemDirectoryHandle,
+  name: string,
+) {
+  await Promise.all([
+    removeDirectoryIfPresent(root, ["skills", name]),
+    removeDirectoryIfPresent(root, ["dist", "codex", name]),
+    removeDirectoryIfPresent(root, ["dist", "copilot", name]),
+    removeDirectoryIfPresent(root, ["dist", "cursor", name]),
+  ])
+}
+
+type RebuildSkillDraft = {
+  name: string
+  title: string
+  description: string
+  version: string
+  tags: string[]
+  triggers: string[]
+  platforms: Array<"codex" | "copilot" | "cursor">
+  body: string
+}
+
+export async function rebuildSkill(
+  root: FileSystemDirectoryHandle,
+  draft: RebuildSkillDraft,
+) {
+  await deleteSkill(root, draft.name)
+
+  return saveSkillDraft(root, {
+    ...draft,
+    sourceMeta: {
+      rawFrontmatter: `name: ${draft.name}`,
+    },
+  })
 }

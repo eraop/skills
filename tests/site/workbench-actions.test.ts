@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { saveSkillDraft } from "../../site/src/lib/workbench-actions.js";
+import {
+  deleteSkill,
+  rebuildSkill,
+  saveSkillDraft,
+} from "../../site/src/lib/workbench-actions.js";
 
 class MemoryFileHandle {
   kind = "file" as const;
@@ -119,6 +123,26 @@ async function createRepoRoot(fileFactory?: (name: string) => MemoryFileHandle) 
   await root.getFileHandle("package.json", { create: true });
   await root.getDirectoryHandle("skills", { create: true });
   return root;
+}
+
+async function saveFrontendDesign(
+  root: MemoryDirectoryHandle,
+  overrides: Partial<Parameters<typeof saveSkillDraft>[1]> = {},
+) {
+  await saveSkillDraft(root as never, {
+    name: "frontend-design",
+    title: "Frontend Design",
+    description: "Create distinctive interfaces.",
+    version: "0.1.0",
+    tags: [],
+    triggers: ["user asks to style a page"],
+    platforms: ["codex", "copilot", "cursor"],
+    body: "This skill guides creation of distinctive interfaces.",
+    sourceMeta: {
+      rawFrontmatter: "name: frontend-design",
+    },
+    ...overrides,
+  });
 }
 
 describe("saveSkillDraft", () => {
@@ -273,5 +297,71 @@ describe("saveSkillDraft", () => {
 
     expect(skillsRoot.hasDirectory("frontend-design")).toBe(true);
     expect(artifactRoot.readFile("README.md")).toBe("existing copilot artifact");
+  });
+});
+
+describe("deleteSkill", () => {
+  it("removes the skill source and generated artifacts without failing on missing platforms", async () => {
+    const root = await createRepoRoot();
+    await saveFrontendDesign(root, {
+      platforms: ["codex", "cursor"],
+    });
+
+    await deleteSkill(root as never, "frontend-design");
+
+    const skillsRoot = await root.getDirectoryHandle("skills");
+    const distRoot = await root.getDirectoryHandle("dist");
+    const codexRoot = await distRoot.getDirectoryHandle("codex");
+    const cursorRoot = await distRoot.getDirectoryHandle("cursor");
+
+    await expect(skillsRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
+    await expect(codexRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
+    await expect(cursorRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
+    await expect(distRoot.getDirectoryHandle("copilot")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
+  });
+});
+
+describe("rebuildSkill", () => {
+  it("recreates the saved skill and drops stale artifacts from removed platforms", async () => {
+    const root = await createRepoRoot();
+    await saveFrontendDesign(root);
+
+    await rebuildSkill(root as never, {
+      name: "frontend-design",
+      title: "Frontend Design",
+      description: "Rebuilds the live skill from scanned content.",
+      version: "0.2.0",
+      tags: ["ui"],
+      triggers: ["user asks to rebuild a skill"],
+      platforms: ["codex"],
+      body: "This rebuilt skill only targets Codex.",
+    });
+
+    const skillsRoot = await root.getDirectoryHandle("skills");
+    const distRoot = await root.getDirectoryHandle("dist");
+    const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
+    const codexRoot = await distRoot.getDirectoryHandle("codex");
+    const codexArtifactRoot = await codexRoot.getDirectoryHandle("frontend-design");
+
+    expect(draftDir.readFile("skill.yaml")).toContain("version: 0.2.0");
+    expect(draftDir.readFile("body.md")).toBe("This rebuilt skill only targets Codex.");
+    expect(codexArtifactRoot.readFile("SKILL.md")).toContain("Frontend Design");
+    const copilotRoot = await distRoot.getDirectoryHandle("copilot");
+    const cursorRoot = await distRoot.getDirectoryHandle("cursor");
+
+    await expect(copilotRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
+    await expect(cursorRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
+      name: "NotFoundError",
+    });
   });
 });
