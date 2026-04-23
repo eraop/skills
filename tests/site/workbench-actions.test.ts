@@ -204,4 +204,39 @@ describe("saveSkillDraft", () => {
       name: "NotFoundError",
     });
   });
+
+  it("fails before mutating the repo when residual artifact paths already exist", async () => {
+    const root = await createRepoRoot();
+    const skillsRoot = await root.getDirectoryHandle("skills");
+    const distRoot = await root.getDirectoryHandle("dist", { create: true });
+    const codexRoot = await distRoot.getDirectoryHandle("codex", { create: true });
+    const artifactRoot = await codexRoot.getDirectoryHandle("frontend-design", {
+      create: true,
+    });
+    const existingArtifact = await artifactRoot.getFileHandle("SKILL.md", {
+      create: true,
+    });
+    const writable = await existingArtifact.createWritable();
+    await writable.write("existing artifact contents");
+    await writable.close();
+
+    await expect(
+      saveSkillDraft(root as never, {
+        name: "frontend-design",
+        title: "Frontend Design",
+        description: "Create distinctive interfaces.",
+        version: "0.1.0",
+        tags: [],
+        triggers: ["user asks to style a page"],
+        platforms: ["codex"],
+        body: "This skill guides creation of distinctive interfaces.",
+        sourceMeta: {
+          rawFrontmatter: "name: frontend-design",
+        },
+      }),
+    ).rejects.toThrow();
+
+    expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
+    expect(artifactRoot.readFile("SKILL.md")).toBe("existing artifact contents");
+  });
 });

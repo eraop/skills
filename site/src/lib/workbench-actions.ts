@@ -67,6 +67,87 @@ async function ensureDirectory(
   }
 }
 
+async function directoryExists(
+  parent: FileSystemDirectoryHandle,
+  name: string,
+) {
+  try {
+    await parent.getDirectoryHandle(name)
+    return true
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return false
+    }
+
+    throw error
+  }
+}
+
+async function fileExists(
+  parent: FileSystemDirectoryHandle,
+  name: string,
+) {
+  try {
+    await parent.getFileHandle(name)
+    return true
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return false
+    }
+
+    throw error
+  }
+}
+
+async function getExistingParentDirectory(
+  root: FileSystemDirectoryHandle,
+  segments: string[],
+) {
+  let directory = root
+
+  for (const segment of segments) {
+    try {
+      directory = await directory.getDirectoryHandle(segment)
+    } catch (error) {
+      if (isNotFoundError(error)) {
+        return null
+      }
+
+      throw error
+    }
+  }
+
+  return directory
+}
+
+async function assertArtifactTargetsDoNotExist(
+  root: FileSystemDirectoryHandle,
+  artifacts: BuildArtifactsResult,
+) {
+  for (const artifact of Object.values(artifacts)) {
+    const segments = artifact.path.split("/")
+    const fileName = segments.pop()
+    const artifactDirectoryName = segments.pop()
+
+    if (!fileName || !artifactDirectoryName) {
+      throw new Error("Artifact path must include a directory and file name.")
+    }
+
+    const parentDirectory = await getExistingParentDirectory(root, segments)
+    if (!parentDirectory) {
+      continue
+    }
+
+    if (await directoryExists(parentDirectory, artifactDirectoryName)) {
+      throw new Error(`Artifact target "${artifact.path}" already exists. Clean it up before saving.`)
+    }
+
+    if (await fileExists(parentDirectory, fileName)) {
+      throw new Error(`Artifact target "${artifact.path}" already exists. Clean it up before saving.`)
+    }
+  }
+}
+
 async function writeTextFile(
   directory: FileSystemDirectoryHandle,
   name: string,
@@ -140,6 +221,8 @@ export async function saveSkillDraft(
       ? { platform_overrides: draft.platformOverrides }
       : {}),
   })
+  const artifacts = buildArtifacts(draft)
+  await assertArtifactTargetsDoNotExist(root, artifacts)
   const skillYaml = YAML.stringify(document)
   const createdEntries: CreatedEntry[] = []
   const draftDir = await ensureDirectory(
@@ -152,7 +235,6 @@ export async function saveSkillDraft(
     await writeTextFile(draftDir, "skill.yaml", skillYaml)
     await writeTextFile(draftDir, "body.md", draft.body)
 
-    const artifacts = buildArtifacts(draft)
     for (const platform of draft.platforms) {
       await writeArtifactFile(root as RemovableDirectoryHandle, artifacts[platform], createdEntries)
     }
