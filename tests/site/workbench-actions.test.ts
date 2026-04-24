@@ -201,7 +201,7 @@ describe("saveSkillDraft", () => {
   it("rolls back created files when artifact generation fails mid-save", async () => {
     const root = await createRepoRoot((name) =>
       new MemoryFileHandle(name, "", (value) => {
-        if (name === "README.md" && value.includes("Frontend Design")) {
+        if (name === "SKILL.md" && value.includes("Frontend Design")) {
           throw new Error("Simulated artifact write failure.");
         }
       }),
@@ -273,7 +273,7 @@ describe("saveSkillDraft", () => {
     const artifactRoot = await copilotRoot.getDirectoryHandle("frontend-design", {
       create: true,
     });
-    const existingArtifact = await artifactRoot.getFileHandle("README.md", {
+    const existingArtifact = await artifactRoot.getFileHandle("SKILL.md", {
       create: true,
     });
     const writable = await existingArtifact.createWritable();
@@ -297,7 +297,7 @@ describe("saveSkillDraft", () => {
     ).resolves.toBeDefined();
 
     expect(skillsRoot.hasDirectory("frontend-design")).toBe(true);
-    expect(artifactRoot.readFile("README.md")).toBe("existing copilot artifact");
+    expect(artifactRoot.readFile("SKILL.md")).toBe("existing copilot artifact");
   });
 });
 

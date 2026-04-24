@@ -174,7 +174,7 @@ Installation guide includes:
 
 - source file locations
 - generated artifact locations
-- platform-specific output names such as `SKILL.md` or `README.md`
+- platform-specific output names such as `SKILL.md`
 
 Local management tools include:
 
@@ -403,7 +403,7 @@ Generated outputs:
 
 ### Copilot
 
-- path: `dist/copilot/<name>/README.md`
+- path: `dist/copilot/<name>/SKILL.md`
 - content:
 
 ```md

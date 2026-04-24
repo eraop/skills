@@ -25,7 +25,7 @@ export function parseArchiveSkill(args: {
     bodyExcerpt: firstParagraph,
     artifacts: document.platforms.map((platform) => ({
       platform,
-      entryFile: platform === "copilot" ? "README.md" : "SKILL.md",
+      entryFile: "SKILL.md",
     })),
   };
 }

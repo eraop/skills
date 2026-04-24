@@ -16,7 +16,7 @@ export function buildArtifacts(draft: SkillDraft): BuildArtifactsResult {
       contents,
     },
     copilot: {
-      path: `dist/copilot/${draft.name}/README.md`,
+      path: `dist/copilot/${draft.name}/SKILL.md`,
       contents,
     },
     cursor: {

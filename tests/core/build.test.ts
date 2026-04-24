@@ -23,7 +23,7 @@ describe("buildSkill", () => {
 
   it("builds enabled platform artifacts", async () => {
     const artifactMap = await buildSkill({
-      skillRoot: "tests/fixtures/using-superpowers",
+      skillRoot: "tests/fixtures/code-generation-guardrails",
       outputRoot,
       builders
     });
@@ -34,7 +34,7 @@ describe("buildSkill", () => {
   it("throws when a required platform builder is missing", async () => {
     await expect(
       buildSkill({
-        skillRoot: "tests/fixtures/using-superpowers",
+        skillRoot: "tests/fixtures/code-generation-guardrails",
         outputRoot,
         builders: {
           codex: buildCodexArtifact,

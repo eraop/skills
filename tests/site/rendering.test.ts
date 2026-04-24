@@ -7,9 +7,9 @@ import type { PublishedSkill } from "../../site/src/lib/types.js";
 
 function makeSkill(overrides: Partial<PublishedSkill> = {}): PublishedSkill {
   return {
-    name: "using-superpowers",
-    title: "Using Superpowers",
-    description: "Use when starting any conversation.",
+    name: "code-generation-guardrails",
+    title: "Code Generation Guardrails",
+    description: "Keep generated code simple, consistent, and narrowly scoped.",
     version: "1.0.0",
     tags: [],
     triggers: [],
@@ -78,10 +78,30 @@ describe("site rendering", () => {
       "This local view can rebuild or delete the connected skill.",
     );
     expect(connectedHtml).toContain(
-      "Delete removes skills/using-superpowers and all generated dist artifacts for this skill.",
+      "Delete removes skills/code-generation-guardrails and all generated dist artifacts for this skill.",
     );
     expect(readOnlyHtml).not.toContain('id="rebuild-skill"');
     expect(readOnlyHtml).not.toContain('id="delete-skill"');
+  });
+
+  it("renders install commands for each supported platform on detail pages", () => {
+    const html = renderDetailPage(
+      makeSkill({
+        platforms: ["codex", "copilot", "cursor"],
+      }),
+    );
+
+    expect(html).toContain("Install");
+    expect(html).toContain("npm exec -- skills install code-generation-guardrails");
+    expect(html).toContain(
+      "npm exec -- skills install code-generation-guardrails --target codex",
+    );
+    expect(html).toContain(
+      "npm exec -- skills install code-generation-guardrails --target copilot",
+    );
+    expect(html).toContain(
+      "npm exec -- skills install code-generation-guardrails --target cursor",
+    );
   });
 
   it("escapes repository labels in the workbench panel", () => {

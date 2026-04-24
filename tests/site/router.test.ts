@@ -11,9 +11,9 @@ describe("parseRoute", () => {
   });
 
   it("routes a skill detail hash", () => {
-    expect(parseRoute("#/skill/using-superpowers")).toEqual({
+    expect(parseRoute("#/skill/code-generation-guardrails")).toEqual({
       kind: "detail",
-      skillName: "using-superpowers"
+      skillName: "code-generation-guardrails"
     });
   });
 

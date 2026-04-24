@@ -4,12 +4,12 @@ import { parseSkillDocument } from "../../packages/core/src/schema.js";
 describe("parseSkillDocument", () => {
   it("accepts a valid neutral skill", () => {
     const parsed = parseSkillDocument({
-      name: "using-superpowers",
-      title: "Using Superpowers",
-      description: "Use when starting any conversation.",
+      name: "code-generation-guardrails",
+      title: "Code Generation Guardrails",
+      description: "Keep generated code simple, consistent, and narrowly scoped.",
       version: "0.1.0",
       tags: ["workflow"],
-      triggers: ["user asks to start a task"],
+      triggers: ["write code"],
       platforms: ["codex", "copilot", "cursor"],
       platform_overrides: {
         codex: {},
@@ -18,7 +18,7 @@ describe("parseSkillDocument", () => {
       }
     });
 
-    expect(parsed.name).toBe("using-superpowers");
+    expect(parsed.name).toBe("code-generation-guardrails");
     expect(parsed.platforms).toEqual(["codex", "copilot", "cursor"]);
     expect(parsed.platform_overrides).toEqual({
       codex: {},

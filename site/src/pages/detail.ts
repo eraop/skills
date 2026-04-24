@@ -14,6 +14,18 @@ export function renderDetailPage(
   const description = escapeHtml(skill.description);
   const version = escapeHtml(skill.version);
   const platforms = skill.platforms.map(escapeHtml).join(", ");
+  const installAllCommand = `npm exec -- skills install ${name}`;
+  const installCommands = skill.platforms
+    .map((platform) => {
+      const escapedPlatform = escapeHtml(platform);
+      return `
+        <li class="border border-white/10 bg-black/20 p-3">
+          <span class="block font-mono text-xs font-semibold uppercase tracking-normal text-copper">${escapedPlatform}</span>
+          <code class="mt-2 block overflow-x-auto whitespace-nowrap font-mono text-sm text-porcelain">${installAllCommand} --target ${escapedPlatform}</code>
+        </li>
+      `;
+    })
+    .join("");
   const showWorkbenchActions = options.repoConnected === true;
   const detailMessage = showWorkbenchActions
     ? "This local view can rebuild or delete the connected skill."
@@ -44,6 +56,18 @@ export function renderDetailPage(
       <section class="mt-8 grid grid-cols-1 gap-4 border-y border-white/10 py-5 sm:grid-cols-2">
         <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Version</strong> ${version}</p>
         <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Platforms</strong> ${platforms}</p>
+      </section>
+      <section class="mt-8 border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-black/15">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="font-mono text-xs font-semibold text-copper">Install</p>
+            <h2 class="mt-2 font-display text-3xl leading-tight text-porcelain">Install this skill</h2>
+          </div>
+          <code class="block overflow-x-auto whitespace-nowrap border border-brass/30 bg-brass/10 px-3 py-2 font-mono text-sm text-porcelain">${installAllCommand}</code>
+        </div>
+        <ul class="mt-5 grid gap-3 sm:grid-cols-3">
+          ${installCommands}
+        </ul>
       </section>
       ${actions}
       <section class="skill-content">${renderMarkdown(skill.body)}</section>

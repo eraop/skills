@@ -86,14 +86,14 @@ Each skill is split into:
 ### Suggested `skill.yaml` fields
 
 ```yaml
-name: using-superpowers
-title: Using Superpowers
-description: Use when starting any conversation.
+name: code-generation-guardrails
+title: Code Generation Guardrails
+description: Keep generated code simple, consistent, and narrowly scoped.
 version: 0.1.0
 tags:
   - workflow
 triggers:
-  - user asks to start a task
+  - write code
 platforms:
   - codex
   - copilot
@@ -271,7 +271,7 @@ The create command should be short and predictable:
 The common happy path should be:
 
 ```bash
-skills install using-superpowers
+skills install code-generation-guardrails
 ```
 
 Expected behavior:
@@ -285,7 +285,7 @@ Expected behavior:
 Power users can narrow the action with flags such as:
 
 ```bash
-skills install using-superpowers --target codex --scope project
+skills install code-generation-guardrails --target codex --scope project
 ```
 
 ## Validation, Versioning, and Testing
@@ -312,7 +312,7 @@ The first release should include:
 - installer path resolution tests
 - fixture skills used as regression samples
 
-`using-superpowers` is a good initial fixture because it already represents a realistic skill.
+`code-generation-guardrails` is a good initial fixture because it already represents a realistic skill.
 
 ## Error Handling
 

@@ -18,7 +18,7 @@ describe("buildArtifacts", () => {
     });
 
     expect(outputs.codex.path).toBe("dist/codex/frontend-design/SKILL.md");
-    expect(outputs.copilot.path).toBe("dist/copilot/frontend-design/README.md");
+    expect(outputs.copilot.path).toBe("dist/copilot/frontend-design/SKILL.md");
     expect(outputs.cursor.contents).toContain("# Frontend Design");
   });
 });

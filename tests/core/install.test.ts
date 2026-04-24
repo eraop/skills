@@ -49,7 +49,7 @@ describe("installSkill", () => {
 
   it("installs a skill into project scope", async () => {
     const results = await installSkill({
-      skillRoot: "tests/fixtures/using-superpowers",
+      skillRoot: "tests/fixtures/code-generation-guardrails",
       outputRoot,
       target: "codex",
       scope: "project",
@@ -58,13 +58,13 @@ describe("installSkill", () => {
     });
 
     expect(results[0]?.destination).toBe(
-      path.join(projectRoot, ".codex", "skills", "using-superpowers")
+      path.join(projectRoot, ".codex", "skills", "code-generation-guardrails")
     );
   });
 
   it("reinstall removes stale files from an existing destination", async () => {
     const [firstInstall] = await installSkill({
-      skillRoot: "tests/fixtures/using-superpowers",
+      skillRoot: "tests/fixtures/code-generation-guardrails",
       outputRoot,
       target: "codex",
       scope: "project",
@@ -76,7 +76,7 @@ describe("installSkill", () => {
     await writeFile(staleFile, "stale");
 
     await installSkill({
-      skillRoot: "tests/fixtures/using-superpowers",
+      skillRoot: "tests/fixtures/code-generation-guardrails",
       outputRoot,
       target: "codex",
       scope: "project",

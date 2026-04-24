@@ -5,27 +5,27 @@
   --font-display: "Iowan Old Style", "Cormorant Garamond", Georgia, serif;
   --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
 
-  --color-ink: #11100e;
-  --color-onyx: #171410;
-  --color-porcelain: #f8f1e6;
-  --color-mist: #c7bdb0;
-  --color-brass: #d9af63;
-  --color-copper: #be6f45;
-  --color-malachite: #4f8f7a;
+  --color-ink: #11091f;
+  --color-onyx: #180f2d;
+  --color-porcelain: #f6f0ff;
+  --color-mist: #cfc1e8;
+  --color-brass: #b994ff;
+  --color-copper: #df73c6;
+  --color-malachite: #72d7f7;
 }
 
 html {
   min-height: 100%;
-  background: #11100e;
+  background: #11091f;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
   background:
-    linear-gradient(115deg, rgba(190, 111, 69, 0.18), transparent 34%),
-    linear-gradient(245deg, rgba(79, 143, 122, 0.14), transparent 36%),
-    linear-gradient(180deg, #191511 0%, #0f0e0c 100%);
+    linear-gradient(115deg, rgba(185, 148, 255, 0.24), transparent 34%),
+    linear-gradient(245deg, rgba(223, 115, 198, 0.16), transparent 36%),
+    linear-gradient(180deg, #1b1034 0%, #0d0818 100%);
   color: var(--color-porcelain);
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -38,8 +38,8 @@ body::before {
   pointer-events: none;
   content: "";
   background-image:
-    linear-gradient(rgba(248, 241, 230, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(248, 241, 230, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(246, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 240, 255, 0.04) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 82%);
 }

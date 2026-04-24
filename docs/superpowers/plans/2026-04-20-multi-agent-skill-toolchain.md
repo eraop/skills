@@ -20,8 +20,8 @@ This plan creates the initial repository skeleton below and keeps each file focu
 - Create: `tsconfig.base.json`
 - Create: `.gitignore`
 - Create: `README.md`
-- Create: `skills/using-superpowers/skill.yaml`
-- Create: `skills/using-superpowers/body.md`
+- Create: `skills/code-generation-guardrails/skill.yaml`
+- Create: `skills/code-generation-guardrails/body.md`
 - Create: `packages/core/package.json`
 - Create: `packages/core/tsconfig.json`
 - Create: `packages/core/src/index.ts`
@@ -49,8 +49,8 @@ This plan creates the initial repository skeleton below and keeps each file focu
 - Create: `packages/cli/src/commands/build.ts`
 - Create: `packages/cli/src/commands/install.ts`
 - Create: `packages/cli/src/commands/list.ts`
-- Create: `tests/fixtures/using-superpowers/skill.yaml`
-- Create: `tests/fixtures/using-superpowers/body.md`
+- Create: `tests/fixtures/code-generation-guardrails/skill.yaml`
+- Create: `tests/fixtures/code-generation-guardrails/body.md`
 - Create: `tests/core/schema.test.ts`
 - Create: `tests/core/build.test.ts`
 - Create: `tests/core/install.test.ts`
@@ -67,7 +67,7 @@ This plan creates the initial repository skeleton below and keeps each file focu
 - Keep `tsconfig.base.json` limited to shared compiler defaults, not package-specific output paths.
 - Keep `skills/<name>/` human-maintained and `dist/` fully generated.
 - Use `npm test` for the full test suite and `npm run build` for TypeScript output.
-- Use `using-superpowers` as the first real fixture skill.
+- Use `code-generation-guardrails` as the first real fixture skill.
 
 ### Task 1: Bootstrap the TypeScript Workspace
 
@@ -199,10 +199,10 @@ git commit -m "chore: bootstrap workspace"
 ### Task 2: Add the Neutral Skill Fixture and Schema Tests
 
 **Files:**
-- Create: `skills/using-superpowers/skill.yaml`
-- Create: `skills/using-superpowers/body.md`
-- Create: `tests/fixtures/using-superpowers/skill.yaml`
-- Create: `tests/fixtures/using-superpowers/body.md`
+- Create: `skills/code-generation-guardrails/skill.yaml`
+- Create: `skills/code-generation-guardrails/body.md`
+- Create: `tests/fixtures/code-generation-guardrails/skill.yaml`
+- Create: `tests/fixtures/code-generation-guardrails/body.md`
 - Create: `tests/core/schema.test.ts`
 - Test: `tests/core/schema.test.ts`
 
@@ -215,12 +215,12 @@ import { parseSkillDocument } from "../../packages/core/src/schema.js";
 describe("parseSkillDocument", () => {
   it("accepts a valid neutral skill", () => {
     const parsed = parseSkillDocument({
-      name: "using-superpowers",
-      title: "Using Superpowers",
-      description: "Use when starting any conversation.",
+      name: "code-generation-guardrails",
+      title: "Code Generation Guardrails",
+      description: "Keep generated code simple, consistent, and narrowly scoped.",
       version: "0.1.0",
       tags: ["workflow"],
-      triggers: ["user asks to start a task"],
+      triggers: ["write code"],
       platforms: ["codex", "copilot", "cursor"],
       platform_overrides: {
         codex: {},
@@ -229,7 +229,7 @@ describe("parseSkillDocument", () => {
       }
     });
 
-    expect(parsed.name).toBe("using-superpowers");
+    expect(parsed.name).toBe("code-generation-guardrails");
     expect(parsed.platforms).toEqual(["codex", "copilot", "cursor"]);
     expect(parsed.platform_overrides).toEqual({
       codex: {},
@@ -250,17 +250,17 @@ Expected: FAIL with a module resolution error because `packages/core/src/schema.
 
 - [ ] **Step 3: Add the first real fixture skill**
 
-`skills/using-superpowers/skill.yaml`
+`skills/code-generation-guardrails/skill.yaml`
 
 ```yaml
-name: using-superpowers
-title: Using Superpowers
-description: Use when starting any conversation.
+name: code-generation-guardrails
+title: Code Generation Guardrails
+description: Keep generated code simple, consistent, and narrowly scoped.
 version: 0.1.0
 tags:
   - workflow
 triggers:
-  - user asks to start a task
+  - write code
 platforms:
   - codex
   - copilot
@@ -271,27 +271,27 @@ platform_overrides:
   cursor: {}
 ```
 
-`skills/using-superpowers/body.md`
+`skills/code-generation-guardrails/body.md`
 
 ```md
-# Using Superpowers
+# Code Generation Guardrails
 
-Invoke relevant or requested skills before responding or acting.
+Keep generated code simple, consistent, and narrowly scoped.
 ```
 
 - [ ] **Step 4: Mirror the fixture under `tests/fixtures` for isolated adapter tests**
 
-`tests/fixtures/using-superpowers/skill.yaml`
+`tests/fixtures/code-generation-guardrails/skill.yaml`
 
 ```yaml
-name: using-superpowers
-title: Using Superpowers
-description: Use when starting any conversation.
+name: code-generation-guardrails
+title: Code Generation Guardrails
+description: Keep generated code simple, consistent, and narrowly scoped.
 version: 0.1.0
 tags:
   - workflow
 triggers:
-  - user asks to start a task
+  - write code
 platforms:
   - codex
   - copilot
@@ -302,12 +302,12 @@ platform_overrides:
   cursor: {}
 ```
 
-`tests/fixtures/using-superpowers/body.md`
+`tests/fixtures/code-generation-guardrails/body.md`
 
 ```md
-# Using Superpowers
+# Code Generation Guardrails
 
-Invoke relevant or requested skills before responding or acting.
+Keep generated code simple, consistent, and narrowly scoped.
 ```
 
 - [ ] **Step 5: Run the schema test again to confirm the failure is now isolated to missing parser code**
@@ -321,7 +321,7 @@ Expected: FAIL with `Cannot find module '../../packages/core/src/schema.js'`.
 - [ ] **Step 6: Commit the neutral fixture and failing test**
 
 ```bash
-git add skills/using-superpowers tests/fixtures/using-superpowers tests/core/schema.test.ts
+git add skills/code-generation-guardrails tests/fixtures/code-generation-guardrails tests/core/schema.test.ts
 git commit -m "test: add neutral skill fixture"
 ```
 
@@ -528,7 +528,7 @@ import { buildSkill } from "../../packages/core/src/build-skill.js";
 describe("buildSkill", () => {
   it("builds enabled platform artifacts", async () => {
     const artifactMap = await buildSkill({
-      skillRoot: "tests/fixtures/using-superpowers",
+      skillRoot: "tests/fixtures/code-generation-guardrails",
       outputRoot: ".tmp/dist"
     });
 
@@ -676,7 +676,7 @@ export async function buildCopilotArtifact(args: {
   await mkdir(args.artifactRoot, { recursive: true });
 
   await writeFile(
-    path.join(args.artifactRoot, "README.md"),
+    path.join(args.artifactRoot, "SKILL.md"),
     `# ${args.skill.document.title}\n\n${args.skill.body}`,
     "utf8"
   );
@@ -738,14 +738,14 @@ import { loadSkill } from "../../packages/core/src/skill-loader.js";
 
 describe("buildCodexArtifact", () => {
   it("returns a codex artifact manifest", async () => {
-    const skill = await loadSkill("tests/fixtures/using-superpowers");
+    const skill = await loadSkill("tests/fixtures/code-generation-guardrails");
     const artifact = await buildCodexArtifact({
       skill,
-      artifactRoot: ".tmp/codex/using-superpowers"
+      artifactRoot: ".tmp/codex/code-generation-guardrails"
     });
 
     expect(artifact.platform).toBe("codex");
-    expect(artifact.skillName).toBe("using-superpowers");
+    expect(artifact.skillName).toBe("code-generation-guardrails");
   });
 });
 ```
@@ -759,10 +759,10 @@ import { loadSkill } from "../../packages/core/src/skill-loader.js";
 
 describe("buildCopilotArtifact", () => {
   it("returns a copilot artifact manifest", async () => {
-    const skill = await loadSkill("tests/fixtures/using-superpowers");
+    const skill = await loadSkill("tests/fixtures/code-generation-guardrails");
     const artifact = await buildCopilotArtifact({
       skill,
-      artifactRoot: ".tmp/copilot/using-superpowers"
+      artifactRoot: ".tmp/copilot/code-generation-guardrails"
     });
 
     expect(artifact.platform).toBe("copilot");
@@ -779,10 +779,10 @@ import { loadSkill } from "../../packages/core/src/skill-loader.js";
 
 describe("buildCursorArtifact", () => {
   it("returns a cursor artifact manifest", async () => {
-    const skill = await loadSkill("tests/fixtures/using-superpowers");
+    const skill = await loadSkill("tests/fixtures/code-generation-guardrails");
     const artifact = await buildCursorArtifact({
       skill,
-      artifactRoot: ".tmp/cursor/using-superpowers"
+      artifactRoot: ".tmp/cursor/code-generation-guardrails"
     });
 
     expect(artifact.platform).toBe("cursor");
@@ -1185,19 +1185,19 @@ Append these assertions to each adapter test after the existing manifest checks:
 ```ts
 import { readFile } from "node:fs/promises";
 
-const skillFile = await readFile(".tmp/codex/using-superpowers/SKILL.md", "utf8");
-expect(skillFile).toContain("# Using Superpowers");
+const skillFile = await readFile(".tmp/codex/code-generation-guardrails/SKILL.md", "utf8");
+expect(skillFile).toContain("# Code Generation Guardrails");
 ```
 
 Use equivalent file paths for Copilot and Cursor:
 
 ```ts
-const copilotFile = await readFile(".tmp/copilot/using-superpowers/README.md", "utf8");
+const copilotFile = await readFile(".tmp/copilot/code-generation-guardrails/SKILL.md", "utf8");
 expect(copilotFile).toContain("Invoke relevant or requested skills");
 ```
 
 ```ts
-const cursorFile = await readFile(".tmp/cursor/using-superpowers/SKILL.md", "utf8");
+const cursorFile = await readFile(".tmp/cursor/code-generation-guardrails/SKILL.md", "utf8");
 expect(cursorFile).toContain("Invoke relevant or requested skills");
 ```
 
@@ -1207,9 +1207,9 @@ Replace the assertion body in `tests/core/build.test.ts` with:
 
 ```ts
 expect(Object.keys(artifactMap)).toEqual(["codex", "copilot", "cursor"]);
-expect(artifactMap.codex.skillName).toBe("using-superpowers");
-expect(artifactMap.copilot.skillName).toBe("using-superpowers");
-expect(artifactMap.cursor.skillName).toBe("using-superpowers");
+expect(artifactMap.codex.skillName).toBe("code-generation-guardrails");
+expect(artifactMap.copilot.skillName).toBe("code-generation-guardrails");
+expect(artifactMap.cursor.skillName).toBe("code-generation-guardrails");
 ```
 
 - [ ] **Step 3: Add an install smoke test for project scope**
@@ -1221,14 +1221,14 @@ import { installSkill } from "../../packages/core/src/install-skill.js";
 
 it("installs a skill into project scope", async () => {
   const results = await installSkill({
-    skillRoot: "tests/fixtures/using-superpowers",
+    skillRoot: "tests/fixtures/code-generation-guardrails",
     outputRoot: ".tmp/dist",
     target: "codex",
     scope: "project",
     projectRoot: ".tmp/project"
   });
 
-  expect(results[0]?.destination).toBe(".tmp/project/.codex/skills/using-superpowers");
+  expect(results[0]?.destination).toBe(".tmp/project/.codex/skills/code-generation-guardrails");
 });
 ```
 
@@ -1243,14 +1243,14 @@ Expected: PASS with all core and adapter tests green.
 - [ ] **Step 5: Run a manual end-to-end CLI check**
 
 ```bash
-node packages/cli/dist/index.js build using-superpowers
-node packages/cli/dist/index.js install using-superpowers --target codex --scope project
+node packages/cli/dist/index.js build code-generation-guardrails
+node packages/cli/dist/index.js install code-generation-guardrails --target codex --scope project
 ```
 
 Expected:
 
-- First command creates `dist/codex/using-superpowers`, `dist/copilot/using-superpowers`, and `dist/cursor/using-superpowers`
-- Second command creates `.codex/skills/using-superpowers` under the repo root
+- First command creates `dist/codex/code-generation-guardrails`, `dist/copilot/code-generation-guardrails`, and `dist/cursor/code-generation-guardrails`
+- Second command creates `.codex/skills/code-generation-guardrails` under the repo root
 
 - [ ] **Step 6: Commit the verification pass**
 

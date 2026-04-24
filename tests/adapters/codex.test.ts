@@ -4,7 +4,7 @@ import { buildCodexArtifact } from "../../packages/adapter-codex/src/index.ts";
 import { loadSkill } from "../../packages/core/src/skill-loader.ts";
 
 describe("buildCodexArtifact", () => {
-  const artifactRoot = ".tmp/tests/adapters/codex/using-superpowers";
+  const artifactRoot = ".tmp/tests/adapters/codex/code-generation-guardrails";
   const testRoot = ".tmp/tests/adapters/codex";
 
   beforeEach(async () => {
@@ -16,13 +16,13 @@ describe("buildCodexArtifact", () => {
   });
 
   it("returns a codex artifact manifest", async () => {
-    const skill = await loadSkill("tests/fixtures/using-superpowers");
+    const skill = await loadSkill("tests/fixtures/code-generation-guardrails");
     const artifact = await buildCodexArtifact({
       skill,
       artifactRoot
     });
 
     expect(artifact.platform).toBe("codex");
-    expect(artifact.skillName).toBe("using-superpowers");
+    expect(artifact.skillName).toBe("code-generation-guardrails");
   });
 });

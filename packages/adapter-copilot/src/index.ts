@@ -10,7 +10,7 @@ export async function buildCopilotArtifact(args: {
   await mkdir(args.artifactRoot, { recursive: true });
 
   await writeFile(
-    path.join(args.artifactRoot, "README.md"),
+    path.join(args.artifactRoot, "SKILL.md"),
     `# ${args.skill.document.title}\n\n${args.skill.body}`,
     "utf8"
   );
