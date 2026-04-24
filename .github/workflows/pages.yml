@@ -5,6 +5,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: read
   pages: write
@@ -12,6 +15,7 @@ permissions:
 
 jobs:
   build:
+    if: ${{ github.event.repository.has_pages }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
