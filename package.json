@@ -15,8 +15,10 @@
     "site:preview": "vite preview --config site/vite.config.ts"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^22.15.3",
     "marked": "^15.0.12",
+    "tailwindcss": "^4.2.4",
     "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",

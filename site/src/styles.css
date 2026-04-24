@@ -1,225 +1,122 @@
-:root {
-  color-scheme: light;
-  --paper: #f6f0e3;
-  --paper-shadow: #ede2cc;
-  --card: rgba(255, 251, 243, 0.92);
-  --ink: #1f1d1a;
-  --muted: #5f584f;
-  --accent: #9a3d22;
-  --line: rgba(31, 29, 26, 0.12);
-}
+@import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+@theme {
+  --font-sans: "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-display: "Iowan Old Style", "Cormorant Garamond", Georgia, serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+
+  --color-ink: #11100e;
+  --color-onyx: #171410;
+  --color-porcelain: #f8f1e6;
+  --color-mist: #c7bdb0;
+  --color-brass: #d9af63;
+  --color-copper: #be6f45;
+  --color-malachite: #4f8f7a;
 }
 
 html {
-  background:
-    radial-gradient(circle at top, rgba(154, 61, 34, 0.12), transparent 38%),
-    linear-gradient(180deg, #fbf6ea 0%, var(--paper) 100%);
+  min-height: 100%;
+  background: #11100e;
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  background: transparent;
-  color: var(--ink);
-  font-family: "IBM Plex Sans", sans-serif;
+  margin: 0;
+  background:
+    linear-gradient(115deg, rgba(190, 111, 69, 0.18), transparent 34%),
+    linear-gradient(245deg, rgba(79, 143, 122, 0.14), transparent 36%),
+    linear-gradient(180deg, #191511 0%, #0f0e0c 100%);
+  color: var(--color-porcelain);
+  font-family: var(--font-sans);
   line-height: 1.6;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(248, 241, 230, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 241, 230, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 82%);
 }
 
 a {
   color: inherit;
 }
 
-#app {
-  width: min(1180px, calc(100vw - 32px));
-  margin: 0 auto;
-  padding: 32px 0 56px;
+button {
+  font: inherit;
 }
 
-.eyebrow {
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.78rem;
-  color: var(--accent);
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
-.archive-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
-}
-
-.archive-shell__main,
-.archive-shell__aside {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  box-shadow: 0 18px 60px rgba(57, 39, 20, 0.08);
-}
-
-.archive-shell__main {
-  padding: 32px;
-}
-
-.hero h1,
-.detail h1,
-.not-found h1 {
-  margin: 0;
-  font-family: "IBM Plex Serif", serif;
-  font-size: clamp(2.4rem, 7vw, 4.8rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.hero {
-  padding-bottom: 28px;
-  border-bottom: 1px solid var(--line);
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.skill-card {
-  display: block;
-  padding: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 235, 218, 0.9));
-  border: 1px solid rgba(31, 29, 26, 0.08);
-  border-radius: 22px;
-  text-decoration: none;
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-
-.skill-card:hover,
-.skill-card:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(154, 61, 34, 0.28);
-  box-shadow: 0 16px 28px rgba(57, 39, 20, 0.12);
-}
-
-.skill-card h2,
-.skill-card p {
-  margin: 0;
-}
-
-.skill-card h2 {
-  margin-top: 6px;
-  font-family: "IBM Plex Serif", serif;
-  font-size: 1.5rem;
-}
-
-.skill-card > p:not(.skill-card__name) {
-  margin-top: 10px;
-  color: var(--muted);
-}
-
-.skill-card__name {
-  color: var(--accent);
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.skill-card__platforms,
-.detail__meta {
-  margin: 16px 0 0;
-  padding: 0;
-}
-
-.skill-card__platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  list-style: none;
-}
-
-.skill-card__platforms li {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--paper-shadow);
-  font-size: 0.88rem;
-  color: var(--muted);
-}
-
-.detail {
-  max-width: 760px;
-}
-
-.lede,
-.not-found a {
-  font-size: 1.1rem;
-}
-
-.lede {
-  color: var(--muted);
-}
-
-.detail__meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  padding: 18px 0 24px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.detail__meta p {
-  margin: 0;
-}
-
-.detail__body {
-  padding-top: 18px;
-}
-
-.detail__body :first-child {
-  margin-top: 0;
-}
-
-.detail__body h1,
-.detail__body h2,
-.detail__body h3 {
-  font-family: "IBM Plex Serif", serif;
-  line-height: 1.1;
-}
-
-.detail__body pre,
-.detail__body code {
-  font-family: "IBM Plex Mono", monospace;
-}
-
-.detail__body pre {
-  overflow-x: auto;
-  padding: 16px;
-  border-radius: 18px;
-  background: #201c18;
-  color: #f7f0e2;
-}
-
-.not-found {
-  max-width: 560px;
-}
-
-.not-found a {
-  text-decoration-thickness: 0.08em;
-}
-
-@media (max-width: 720px) {
-  #app {
-    width: min(100vw - 20px, 1180px);
-    padding: 20px 0 32px;
+@layer components {
+  .skill-content {
+    @apply mt-8 border-t border-white/10 pt-7 text-base leading-7 text-mist;
   }
 
-  .archive-shell__main {
-    padding: 22px;
-    border-radius: 22px;
+  .skill-content > :first-child {
+    @apply mt-0;
+  }
+
+  .skill-content h1,
+  .skill-content h2,
+  .skill-content h3 {
+    @apply font-display leading-tight text-porcelain;
+  }
+
+  .skill-content h1 {
+    @apply mt-10 text-4xl;
+  }
+
+  .skill-content h2 {
+    @apply mt-9 text-3xl;
+  }
+
+  .skill-content h3 {
+    @apply mt-8 text-2xl;
+  }
+
+  .skill-content p,
+  .skill-content ul,
+  .skill-content ol,
+  .skill-content pre {
+    @apply my-5;
+  }
+
+  .skill-content ul,
+  .skill-content ol {
+    @apply pl-6;
+  }
+
+  .skill-content li {
+    @apply my-2;
+  }
+
+  .skill-content a {
+    @apply text-brass underline decoration-brass/40 underline-offset-4 transition hover:text-porcelain;
+  }
+
+  .skill-content code {
+    @apply rounded-md border border-white/10 bg-white/10 px-1.5 py-0.5 font-mono text-sm text-porcelain;
+  }
+
+  .skill-content pre {
+    @apply overflow-x-auto rounded-lg border border-white/10 bg-black/45 p-4 text-sm text-porcelain shadow-2xl shadow-black/20;
+  }
+
+  .skill-content pre code {
+    @apply border-0 bg-transparent p-0;
+  }
+
+  .skill-content blockquote {
+    @apply my-6 border-l border-brass/60 pl-5 text-porcelain;
   }
 }

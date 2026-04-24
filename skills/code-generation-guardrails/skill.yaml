@@ -1,0 +1,15 @@
+name: code-generation-guardrails
+title: Code Generation Guardrails
+description: 在生成代码前约束简洁性、一致性和最小改动原则
+version: 0.1.0
+tags: []
+triggers:
+  - 编写新代码
+  - 修改已有代码
+  - 实现功能
+  - 修复 bug
+  - 重构任务
+platforms:
+  - codex
+  - copilot
+  - cursor

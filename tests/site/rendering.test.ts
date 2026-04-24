@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { renderArchiveShell } from "../../site/src/components/archive-shell.js";
 import { renderSkillCard } from "../../site/src/components/skill-card.js";
 import { renderWorkbenchPanel } from "../../site/src/components/workbench-panel.js";
 import { renderDetailPage } from "../../site/src/pages/detail.js";
@@ -21,6 +22,14 @@ function makeSkill(overrides: Partial<PublishedSkill> = {}): PublishedSkill {
 }
 
 describe("site rendering", () => {
+  it("renders a GitHub repository link in the archive shell", () => {
+    const html = renderArchiveShell("<section>Archive</section>");
+
+    expect(html).toContain("https://github.com/eraop/skills");
+    expect(html).toContain('aria-label="Open GitHub repository"');
+    expect(html).toContain("<svg");
+  });
+
   it("escapes plain-text metadata in skill cards", () => {
     const html = renderSkillCard(
       makeSkill({

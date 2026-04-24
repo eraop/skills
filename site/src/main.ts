@@ -348,10 +348,10 @@ async function bootstrap() {
     render();
   } catch {
     appRoot.innerHTML = renderArchiveShell(`
-      <section class="not-found">
-        <p class="eyebrow">Unavailable</p>
-        <h1>The archive could not be loaded.</h1>
-        <p class="lede">Please refresh and try again in a moment.</p>
+      <section class="max-w-xl py-16">
+        <p class="font-mono text-xs font-semibold text-copper">Unavailable</p>
+        <h1 class="mt-4 font-display text-5xl leading-none text-porcelain sm:text-6xl">The archive could not be loaded.</h1>
+        <p class="mt-6 text-lg leading-8 text-mist">Please refresh and try again in a moment.</p>
       </section>
     `);
   }
