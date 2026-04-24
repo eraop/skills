@@ -3,7 +3,7 @@ const githubRepositoryUrl = "https://github.com/eraop/skills";
 function renderGithubLink() {
   return `
     <a
-      class="group fixed right-4 top-4 z-30 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/10 text-porcelain shadow-2xl shadow-black/30 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:border-brass/70 hover:bg-brass hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass"
+      class="group absolute right-4 top-4 z-30 inline-flex h-12 w-12 items-center justify-center rounded-full border border-malachite/25 bg-onyx/80 text-porcelain shadow-2xl shadow-malachite/10 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:border-malachite/70 hover:bg-malachite hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite"
       href="${githubRepositoryUrl}"
       target="_blank"
       rel="noreferrer"

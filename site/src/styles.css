@@ -2,30 +2,30 @@
 
 @theme {
   --font-sans: "Avenir Next", "Helvetica Neue", sans-serif;
-  --font-display: "Iowan Old Style", "Cormorant Garamond", Georgia, serif;
+  --font-display: "Avenir Next Condensed", "Avenir Next", "Helvetica Neue", sans-serif;
   --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
 
-  --color-ink: #11091f;
-  --color-onyx: #180f2d;
-  --color-porcelain: #f6f0ff;
-  --color-mist: #cfc1e8;
-  --color-brass: #b994ff;
-  --color-copper: #df73c6;
-  --color-malachite: #72d7f7;
+  --color-ink: #070817;
+  --color-onyx: #11152d;
+  --color-porcelain: #eef4ff;
+  --color-mist: #aeb9df;
+  --color-brass: #9b87ff;
+  --color-copper: #ff4fd8;
+  --color-malachite: #45e8ff;
 }
 
 html {
   min-height: 100%;
-  background: #11091f;
+  background: #070817;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
   background:
-    linear-gradient(115deg, rgba(185, 148, 255, 0.24), transparent 34%),
-    linear-gradient(245deg, rgba(223, 115, 198, 0.16), transparent 36%),
-    linear-gradient(180deg, #1b1034 0%, #0d0818 100%);
+    linear-gradient(132deg, rgba(69, 232, 255, 0.14), transparent 28%),
+    linear-gradient(232deg, rgba(255, 79, 216, 0.16), transparent 34%),
+    linear-gradient(180deg, #16183a 0%, #080914 72%, #05060f 100%);
   color: var(--color-porcelain);
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -38,10 +38,22 @@ body::before {
   pointer-events: none;
   content: "";
   background-image:
-    linear-gradient(rgba(246, 240, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(246, 240, 255, 0.04) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 82%);
+    linear-gradient(rgba(69, 232, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 135, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(135deg, transparent 0 47%, rgba(255, 255, 255, 0.045) 48% 52%, transparent 53% 100%);
+  background-size: 44px 44px, 44px 44px, 180px 180px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 88%);
+}
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, transparent, rgba(69, 232, 255, 0.08), transparent);
+  background-size: 100% 9px;
+  opacity: 0.18;
 }
 
 a {
@@ -59,7 +71,7 @@ button:disabled {
 
 @layer components {
   .skill-content {
-    @apply mt-8 border-t border-white/10 pt-7 text-base leading-7 text-mist;
+    @apply mt-8 border-t border-brass/20 pt-7 text-base leading-7 text-mist;
   }
 
   .skill-content > :first-child {
@@ -70,6 +82,7 @@ button:disabled {
   .skill-content h2,
   .skill-content h3 {
     @apply font-display leading-tight text-porcelain;
+    text-shadow: 0 0 28px rgba(155, 135, 255, 0.28);
   }
 
   .skill-content h1 {
@@ -101,15 +114,15 @@ button:disabled {
   }
 
   .skill-content a {
-    @apply text-brass underline decoration-brass/40 underline-offset-4 transition hover:text-porcelain;
+    @apply text-malachite underline decoration-malachite/40 underline-offset-4 transition hover:text-porcelain;
   }
 
   .skill-content code {
-    @apply rounded-md border border-white/10 bg-white/10 px-1.5 py-0.5 font-mono text-sm text-porcelain;
+    @apply rounded-md border border-malachite/20 bg-malachite/10 px-1.5 py-0.5 font-mono text-sm text-porcelain;
   }
 
   .skill-content pre {
-    @apply overflow-x-auto rounded-lg border border-white/10 bg-black/45 p-4 text-sm text-porcelain shadow-2xl shadow-black/20;
+    @apply overflow-x-auto rounded-lg border border-brass/20 bg-black/50 p-4 text-sm text-porcelain shadow-2xl shadow-black/20;
   }
 
   .skill-content pre code {
@@ -117,6 +130,6 @@ button:disabled {
   }
 
   .skill-content blockquote {
-    @apply my-6 border-l border-brass/60 pl-5 text-porcelain;
+    @apply my-6 border-l border-malachite/60 pl-5 text-porcelain;
   }
 }

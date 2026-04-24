@@ -92,15 +92,19 @@ describe("site rendering", () => {
     );
 
     expect(html).toContain("Install");
-    expect(html).toContain("npm exec -- skills install code-generation-guardrails");
+    expect(html).not.toContain("npm exec -- skills");
+    expect(html).not.toContain("node packages/cli/dist/index.js install");
     expect(html).toContain(
-      "npm exec -- skills install code-generation-guardrails --target codex",
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails",
     );
     expect(html).toContain(
-      "npm exec -- skills install code-generation-guardrails --target copilot",
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target codex",
     );
     expect(html).toContain(
-      "npm exec -- skills install code-generation-guardrails --target cursor",
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target copilot",
+    );
+    expect(html).toContain(
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target cursor",
     );
   });
 
