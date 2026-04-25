@@ -16,14 +16,7 @@ export function renderSkillCard(skill: PublishedSkill) {
       <p class="font-mono text-xs font-semibold text-copper">${skillName}</p>
       <h2 class="mt-3 font-display text-2xl font-semibold leading-tight text-porcelain">${title}</h2>
       <p class="mt-3 text-sm leading-6 text-mist">${description}</p>
-      <ul class="mt-5 flex flex-wrap gap-2">
-        ${skill.platforms
-          .map(
-            (platform) =>
-              `<li class="border border-malachite/20 bg-malachite/10 px-2.5 py-1 font-mono text-xs text-mist">${escapeHtml(platform)}</li>`,
-          )
-          .join("")}
-      </ul>
+      <p class="mt-5 inline-flex border border-malachite/20 bg-malachite/10 px-2.5 py-1 font-mono text-xs text-mist">SKILL.md</p>
     </a>
   `;
 }

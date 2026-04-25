@@ -2,7 +2,11 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@skills/core": ["packages/core/src/index.ts"]
+    }
   },
   "include": [
     "packages/*/src/**/*.ts",

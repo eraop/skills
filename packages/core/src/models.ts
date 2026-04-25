@@ -1,9 +1,3 @@
-export type Platform = "codex" | "copilot" | "cursor";
-
-export interface SkillOverride {
-  notes?: string[];
-}
-
 export interface SkillDocument {
   name: string;
   title: string;
@@ -11,12 +5,11 @@ export interface SkillDocument {
   version: string;
   tags: string[];
   triggers: string[];
-  platforms: Platform[];
-  platform_overrides?: Partial<Record<Platform, SkillOverride>>;
 }
 
 export interface NeutralSkill {
   document: SkillDocument;
+  documentSource: string;
   body: string;
   rootDir: string;
 }

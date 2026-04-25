@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { scanRepoSkills } from "../../site/src/lib/live-repo.js";
 import {
   deleteSkill,
   rebuildSkill,
@@ -137,7 +136,6 @@ async function saveFrontendDesign(
     version: "0.1.0",
     tags: [],
     triggers: ["user asks to style a page"],
-    platforms: ["codex", "copilot", "cursor"],
     body: "This skill guides creation of distinctive interfaces.",
     sourceMeta: {
       rawFrontmatter: "name: frontend-design",
@@ -159,7 +157,6 @@ describe("saveSkillDraft", () => {
         version: "0.1.0",
         tags: [],
         triggers: [],
-        platforms: ["codex", "copilot", "cursor"],
         body: "This skill guides creation of distinctive interfaces.",
         sourceMeta: {
           rawFrontmatter: "name: frontend-design",
@@ -168,34 +165,6 @@ describe("saveSkillDraft", () => {
     ).rejects.toThrow();
 
     expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
-  });
-
-  it("preserves platform overrides when saving a parsed draft", async () => {
-    const root = await createRepoRoot();
-    const skillsRoot = await root.getDirectoryHandle("skills");
-
-    await saveSkillDraft(root as never, {
-      name: "frontend-design",
-      title: "Frontend Design",
-      description: "Create distinctive interfaces.",
-      version: "0.1.0",
-      tags: [],
-      triggers: ["user asks to style a page"],
-      platforms: ["codex"],
-      platformOverrides: {
-        codex: {
-          notes: ["Keep this skill visible."],
-        },
-      },
-      body: "This skill guides creation of distinctive interfaces.",
-      sourceMeta: {
-        rawFrontmatter: "name: frontend-design",
-      },
-    });
-
-    const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
-    expect(draftDir.readFile("skill.yaml")).toContain("platform_overrides:");
-    expect(draftDir.readFile("skill.yaml")).toContain("Keep this skill visible.");
   });
 
   it("rolls back created files when artifact generation fails mid-save", async () => {
@@ -216,7 +185,6 @@ describe("saveSkillDraft", () => {
         version: "0.1.0",
         tags: [],
         triggers: ["user asks to style a page"],
-        platforms: ["codex", "copilot", "cursor"],
         body: "This skill guides creation of distinctive interfaces.",
         sourceMeta: {
           rawFrontmatter: "name: frontend-design",
@@ -234,8 +202,7 @@ describe("saveSkillDraft", () => {
     const root = await createRepoRoot();
     const skillsRoot = await root.getDirectoryHandle("skills");
     const distRoot = await root.getDirectoryHandle("dist", { create: true });
-    const codexRoot = await distRoot.getDirectoryHandle("codex", { create: true });
-    const artifactRoot = await codexRoot.getDirectoryHandle("frontend-design", {
+    const artifactRoot = await distRoot.getDirectoryHandle("frontend-design", {
       create: true,
     });
     const existingArtifact = await artifactRoot.getFileHandle("SKILL.md", {
@@ -253,7 +220,6 @@ describe("saveSkillDraft", () => {
         version: "0.1.0",
         tags: [],
         triggers: ["user asks to style a page"],
-        platforms: ["codex"],
         body: "This skill guides creation of distinctive interfaces.",
         sourceMeta: {
           rawFrontmatter: "name: frontend-design",
@@ -265,19 +231,18 @@ describe("saveSkillDraft", () => {
     expect(artifactRoot.readFile("SKILL.md")).toBe("existing artifact contents");
   });
 
-  it("ignores residual artifacts for platforms that are not selected for this save", async () => {
+  it("fails before mutating the repo when the shared artifact path already exists", async () => {
     const root = await createRepoRoot();
     const skillsRoot = await root.getDirectoryHandle("skills");
     const distRoot = await root.getDirectoryHandle("dist", { create: true });
-    const copilotRoot = await distRoot.getDirectoryHandle("copilot", { create: true });
-    const artifactRoot = await copilotRoot.getDirectoryHandle("frontend-design", {
+    const artifactRoot = await distRoot.getDirectoryHandle("frontend-design", {
       create: true,
     });
     const existingArtifact = await artifactRoot.getFileHandle("SKILL.md", {
       create: true,
     });
     const writable = await existingArtifact.createWritable();
-    await writable.write("existing copilot artifact");
+    await writable.write("existing shared artifact");
     await writable.close();
 
     await expect(
@@ -288,50 +253,39 @@ describe("saveSkillDraft", () => {
         version: "0.1.0",
         tags: [],
         triggers: ["user asks to style a page"],
-        platforms: ["codex"],
         body: "This skill guides creation of distinctive interfaces.",
         sourceMeta: {
           rawFrontmatter: "name: frontend-design",
         },
       }),
-    ).resolves.toBeDefined();
+    ).rejects.toThrow();
 
-    expect(skillsRoot.hasDirectory("frontend-design")).toBe(true);
-    expect(artifactRoot.readFile("SKILL.md")).toBe("existing copilot artifact");
+    expect(skillsRoot.hasDirectory("frontend-design")).toBe(false);
+    expect(artifactRoot.readFile("SKILL.md")).toBe("existing shared artifact");
   });
 });
 
 describe("deleteSkill", () => {
-  it("removes the skill source and generated artifacts without failing on missing platforms", async () => {
+  it("removes the skill source and generated artifact", async () => {
     const root = await createRepoRoot();
-    await saveFrontendDesign(root, {
-      platforms: ["codex", "cursor"],
-    });
+    await saveFrontendDesign(root);
 
     await deleteSkill(root as never, "frontend-design");
 
     const skillsRoot = await root.getDirectoryHandle("skills");
     const distRoot = await root.getDirectoryHandle("dist");
-    const codexRoot = await distRoot.getDirectoryHandle("codex");
-    const cursorRoot = await distRoot.getDirectoryHandle("cursor");
 
     await expect(skillsRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
       name: "NotFoundError",
     });
-    await expect(codexRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
-      name: "NotFoundError",
-    });
-    await expect(cursorRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
-      name: "NotFoundError",
-    });
-    await expect(distRoot.getDirectoryHandle("copilot")).rejects.toMatchObject({
+    await expect(distRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
       name: "NotFoundError",
     });
   });
 });
 
 describe("rebuildSkill", () => {
-  it("recreates the saved skill and drops stale artifacts from removed platforms", async () => {
+  it("recreates the saved skill and replaces the shared artifact", async () => {
     const root = await createRepoRoot();
     await saveFrontendDesign(root);
 
@@ -342,52 +296,20 @@ describe("rebuildSkill", () => {
       version: "0.2.0",
       tags: ["ui"],
       triggers: ["user asks to rebuild a skill"],
-      platforms: ["codex"],
       body: "This rebuilt skill only targets Codex.",
       bodyExcerpt: "This rebuilt skill only targets Codex.",
-      artifacts: [{ platform: "codex", entryFile: "SKILL.md" }],
+      artifacts: [{ entryFile: "SKILL.md" }],
     });
 
     const skillsRoot = await root.getDirectoryHandle("skills");
     const distRoot = await root.getDirectoryHandle("dist");
     const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
-    const codexRoot = await distRoot.getDirectoryHandle("codex");
-    const codexArtifactRoot = await codexRoot.getDirectoryHandle("frontend-design");
+    const artifactRoot = await distRoot.getDirectoryHandle("frontend-design");
 
     expect(draftDir.readFile("skill.yaml")).toContain("version: 0.2.0");
     expect(draftDir.readFile("body.md")).toBe("This rebuilt skill only targets Codex.");
-    expect(codexArtifactRoot.readFile("SKILL.md")).toContain("Frontend Design");
-    const copilotRoot = await distRoot.getDirectoryHandle("copilot");
-    const cursorRoot = await distRoot.getDirectoryHandle("cursor");
-
-    await expect(copilotRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
-      name: "NotFoundError",
-    });
-    await expect(cursorRoot.getDirectoryHandle("frontend-design")).rejects.toMatchObject({
-      name: "NotFoundError",
-    });
+    expect(artifactRoot.readFile("SKILL.md")).toContain("Frontend Design");
+    expect(artifactRoot.readFile("SKILL.md")).toContain("user asks to rebuild a skill");
   });
 
-  it("preserves platform overrides when rebuilding a scanned skill", async () => {
-    const root = await createRepoRoot();
-
-    await saveFrontendDesign(root, {
-      platforms: ["codex"],
-      platformOverrides: {
-        codex: {
-          notes: ["Keep this skill visible."],
-        },
-      },
-    });
-
-    const scanned = await scanRepoSkills(root as never);
-
-    await rebuildSkill(root as never, scanned[0]!);
-
-    const skillsRoot = await root.getDirectoryHandle("skills");
-    const draftDir = await skillsRoot.getDirectoryHandle("frontend-design");
-
-    expect(draftDir.readFile("skill.yaml")).toContain("platform_overrides:");
-    expect(draftDir.readFile("skill.yaml")).toContain("Keep this skill visible.");
-  });
 });

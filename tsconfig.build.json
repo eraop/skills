@@ -2,9 +2,6 @@
   "files": [],
   "references": [
     { "path": "./packages/core" },
-    { "path": "./packages/adapter-codex" },
-    { "path": "./packages/adapter-copilot" },
-    { "path": "./packages/adapter-cursor" },
     { "path": "./packages/cli" }
   ]
 }

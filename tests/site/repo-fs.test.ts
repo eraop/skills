@@ -40,13 +40,13 @@ describe("isValidRepoLayout", () => {
 describe("removeDirectoryIfPresent", () => {
   it("removes nested directories and ignores missing paths", async () => {
     const removeEntry = vi.fn(async () => {});
-    const codexRoot = {
+    const skillRoot = {
       removeEntry,
     };
     const distRoot = {
       getDirectoryHandle: async (name: string) => {
-        if (name === "codex") {
-          return codexRoot;
+        if (name === "frontend-design") {
+          return skillRoot;
         }
 
         throw Object.assign(new Error(`Missing directory: ${name}`), {
@@ -62,13 +62,13 @@ describe("removeDirectoryIfPresent", () => {
     };
 
     await expect(
-      removeDirectoryIfPresent(repoRoot as never, ["dist", "codex", "frontend-design"]),
+      removeDirectoryIfPresent(repoRoot as never, ["dist", "frontend-design", "SKILL.md"]),
     ).resolves.toBeUndefined();
     await expect(
-      removeDirectoryIfPresent(repoRoot as never, ["dist", "copilot", "frontend-design"]),
+      removeDirectoryIfPresent(repoRoot as never, ["dist", "missing-skill", "SKILL.md"]),
     ).resolves.toBeUndefined();
 
     expect(removeEntry).toHaveBeenCalledOnce();
-    expect(removeEntry).toHaveBeenCalledWith("frontend-design", { recursive: true });
+    expect(removeEntry).toHaveBeenCalledWith("SKILL.md", { recursive: true });
   });
 });

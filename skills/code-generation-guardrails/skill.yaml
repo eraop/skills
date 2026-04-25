@@ -9,7 +9,3 @@ triggers:
   - 实现功能
   - 修复 bug
   - 重构任务
-platforms:
-  - codex
-  - copilot
-  - cursor

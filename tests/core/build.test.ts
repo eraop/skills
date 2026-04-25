@@ -1,17 +1,10 @@
-import { rm } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
+import path from "node:path";
 import { beforeEach, afterEach, describe, expect, it } from "vitest";
-import { buildCodexArtifact } from "../../packages/adapter-codex/src/index.ts";
-import { buildCopilotArtifact } from "../../packages/adapter-copilot/src/index.ts";
-import { buildCursorArtifact } from "../../packages/adapter-cursor/src/index.ts";
 import { buildSkill } from "../../packages/core/src/build-skill.ts";
 
 describe("buildSkill", () => {
   const outputRoot = ".tmp/tests/core/build";
-  const builders = {
-    codex: buildCodexArtifact,
-    copilot: buildCopilotArtifact,
-    cursor: buildCursorArtifact
-  };
 
   beforeEach(async () => {
     await rm(outputRoot, { recursive: true, force: true });
@@ -21,26 +14,18 @@ describe("buildSkill", () => {
     await rm(outputRoot, { recursive: true, force: true });
   });
 
-  it("builds enabled platform artifacts", async () => {
-    const artifactMap = await buildSkill({
+  it("builds a single shared skill artifact", async () => {
+    const artifact = await buildSkill({
       skillRoot: "tests/fixtures/code-generation-guardrails",
-      outputRoot,
-      builders
+      outputRoot
     });
 
-    expect(Object.keys(artifactMap)).toEqual(["codex", "copilot", "cursor"]);
-  });
+    expect(artifact.skillName).toBe("code-generation-guardrails");
+    expect(artifact.artifactPath).toBe(path.join(outputRoot, "code-generation-guardrails"));
 
-  it("throws when a required platform builder is missing", async () => {
-    await expect(
-      buildSkill({
-        skillRoot: "tests/fixtures/code-generation-guardrails",
-        outputRoot,
-        builders: {
-          codex: buildCodexArtifact,
-          copilot: buildCopilotArtifact
-        }
-      })
-    ).rejects.toThrow('Missing builder for platform "cursor"');
+    const skillFile = await readFile(path.join(artifact.artifactPath, "SKILL.md"), "utf8");
+    expect(skillFile).toContain("---\nname: code-generation-guardrails");
+    expect(skillFile).toContain("triggers:");
+    expect(skillFile).not.toContain("## 适用场景");
   });
 });

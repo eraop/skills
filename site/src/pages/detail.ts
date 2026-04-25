@@ -16,19 +16,16 @@ export function renderDetailPage(
   const title = escapeHtml(skill.title);
   const description = escapeHtml(skill.description);
   const version = escapeHtml(skill.version);
-  const platforms = skill.platforms.map(escapeHtml).join(", ");
+  const triggers =
+    skill.triggers.length > 0
+      ? skill.triggers
+          .map(
+            (trigger) =>
+              `<li class="border border-malachite/20 bg-malachite/10 px-2.5 py-1 font-mono text-xs text-mist">${escapeHtml(trigger)}</li>`,
+          )
+          .join("")
+      : `<li class="font-mono text-xs text-mist">-</li>`;
   const installAllCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${name}`;
-  const installCommands = skill.platforms
-    .map((platform) => {
-      const escapedPlatform = escapeHtml(platform);
-      return `
-        <li class="border border-malachite/20 bg-black/25 p-3 shadow-inner shadow-malachite/5">
-          <span class="block font-mono text-xs font-semibold uppercase tracking-normal text-malachite">${escapedPlatform}</span>
-          <code class="mt-2 block break-all font-mono text-sm text-porcelain"><span class="text-copper">&gt;</span> ${installAllCommand} --target ${escapedPlatform}</code>
-        </li>
-      `;
-    })
-    .join("");
   const showWorkbenchActions = options.repoConnected === true;
   const detailMessage = showWorkbenchActions
     ? "This local view can rebuild or delete the connected skill."
@@ -58,7 +55,11 @@ export function renderDetailPage(
       <p class="mt-5 max-w-2xl text-sm leading-6 text-mist">${detailMessage}</p>
       <section class="mt-8 grid grid-cols-1 gap-4 border-y border-brass/20 py-5 sm:grid-cols-2">
         <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Version</strong> ${version}</p>
-        <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Platforms</strong> ${platforms}</p>
+        <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Artifact</strong> SKILL.md</p>
+        <div class="text-sm text-mist sm:col-span-2">
+          <strong class="block font-mono text-xs text-porcelain">Triggers</strong>
+          <ul class="mt-2 flex flex-wrap gap-2">${triggers}</ul>
+        </div>
       </section>
       <section class="relative mt-8 overflow-hidden rounded-lg border border-malachite/25 bg-onyx/80 p-5 shadow-2xl shadow-malachite/10">
         <span class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-malachite to-transparent"></span>
@@ -69,9 +70,6 @@ export function renderDetailPage(
           </div>
           <code class="block break-all border border-brass/30 bg-black/35 px-3 py-2 font-mono text-sm text-porcelain"><span class="text-copper">&gt;</span> ${installAllCommand}</code>
         </div>
-        <ul class="mt-5 grid gap-3 sm:grid-cols-3">
-          ${installCommands}
-        </ul>
       </section>
       ${actions}
       <section class="skill-content">${renderMarkdown(skill.body)}</section>

@@ -1,26 +1,31 @@
-import type { SkillDraft, SkillPlatform } from "./skill-schema.js"
+import { renderSkillMarkdown } from "../../../packages/core/src/render-skill.js"
+import type { SkillDraft } from "./skill-schema.js"
 
 type ArtifactOutput = {
   path: string;
   contents: string;
 }
 
-export type BuildArtifactsResult = Record<SkillPlatform, ArtifactOutput>
+export type BuildArtifactsResult = {
+  shared: ArtifactOutput;
+}
 
 export function buildArtifacts(draft: SkillDraft): BuildArtifactsResult {
-  const contents = `# ${draft.title}\n\n${draft.body}`
+  const contents = renderSkillMarkdown({
+    document: {
+      name: draft.name,
+      title: draft.title,
+      description: draft.description,
+      version: draft.version,
+      tags: draft.tags,
+      triggers: draft.triggers,
+    },
+    body: draft.body,
+  })
 
   return {
-    codex: {
-      path: `dist/codex/${draft.name}/SKILL.md`,
-      contents,
-    },
-    copilot: {
-      path: `dist/copilot/${draft.name}/SKILL.md`,
-      contents,
-    },
-    cursor: {
-      path: `dist/cursor/${draft.name}/SKILL.md`,
+    shared: {
+      path: `dist/${draft.name}/SKILL.md`,
       contents,
     },
   }

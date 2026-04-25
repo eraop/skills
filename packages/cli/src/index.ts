@@ -20,14 +20,13 @@ program
 program
   .command("install")
   .argument("<skillName>")
-  .option("--target <target>", "target platform", "all")
   .option("--scope <scope>", "install scope", "global")
   .action(
     async (
       skillName: string,
-      options: { target: "codex" | "copilot" | "cursor" | "all"; scope: "global" | "project" }
+      options: { scope: "global" | "project" }
     ) => {
-      await runInstallCommand(repoRoot, skillName, options.target, options.scope);
+      await runInstallCommand(repoRoot, skillName, options.scope);
     }
   );
 

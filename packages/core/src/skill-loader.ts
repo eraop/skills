@@ -14,6 +14,7 @@ export async function loadSkill(rootDir: string): Promise<NeutralSkill> {
 
   return {
     document: parseSkillDocument(YAML.parse(documentSource)),
+    documentSource,
     body,
     rootDir
   };

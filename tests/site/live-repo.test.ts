@@ -95,8 +95,6 @@ version: 0.1.0
 tags: []
 triggers:
   - user asks to style a page
-platforms:
-  - codex
 `);
     await (await body.createWritable()).write("Initial body.");
 
@@ -108,8 +106,6 @@ version: 0.1.0
 tags: []
 triggers:
   - user asks to style a page
-platforms:
-  - codex
 `);
 
     const rescanned = await scanRepoSkills(root as never);

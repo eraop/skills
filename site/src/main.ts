@@ -61,7 +61,7 @@ async function bootstrap() {
 
       try {
         skillDraft = parsePastedSkill(source);
-        skillValidationMessage = `Ready to save "${skillDraft.name}" and build ${skillDraft.platforms.join(", ")} artifacts.`;
+        skillValidationMessage = `Ready to save "${skillDraft.name}" and build SKILL.md.`;
       } catch (error) {
         skillDraft = null;
         skillValidationMessage =
@@ -90,14 +90,6 @@ async function bootstrap() {
       const previewName = document.querySelector<HTMLElement>("#skill-preview-name");
       if (previewName) {
         previewName.textContent = skillDraft?.name ?? "Not parsed yet.";
-      }
-
-      const previewPlatforms = document.querySelector<HTMLElement>(
-        "#skill-preview-platforms",
-      );
-      if (previewPlatforms) {
-        previewPlatforms.textContent =
-          skillDraft?.platforms.join(", ") ?? "-";
       }
 
       const previewDescription = document.querySelector<HTMLElement>(

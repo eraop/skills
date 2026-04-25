@@ -13,30 +13,18 @@ tags:
   - workflow
 triggers:
   - user asks to start a task
-platforms:
-  - codex
-  - copilot
-  - cursor
-platform_overrides:
-  codex:
-    notes:
-      - Keep this skill visible.
 `,
       body: "# Code Generation Guardrails\n\nKeep changes narrow and consistent.\n",
     });
 
     expect(record.name).toBe("code-generation-guardrails");
-    expect(record.platforms).toEqual(["codex", "copilot", "cursor"]);
-    expect(record.artifacts).toEqual([
-      { platform: "codex", entryFile: "SKILL.md" },
-      { platform: "copilot", entryFile: "SKILL.md" },
-      { platform: "cursor", entryFile: "SKILL.md" },
-    ]);
+    expect(record.description).toBe("Keep generated code simple, consistent, and narrowly scoped.");
+    expect(record.triggers).toEqual(["user asks to start a task"]);
+    expect(record.body).toBe("# Code Generation Guardrails\n\nKeep changes narrow and consistent.\n");
+    expect(record.body).not.toContain("---\nname: code-generation-guardrails");
+    expect(record.body).not.toContain("triggers:\n  - user asks to start a task");
+    expect(record.body).not.toContain("## 适用场景");
+    expect(record.artifacts).toEqual([{ entryFile: "SKILL.md" }]);
     expect(record.bodyExcerpt).toContain("Keep changes narrow and consistent.");
-    expect(record.platformOverrides).toEqual({
-      codex: {
-        notes: ["Keep this skill visible."],
-      },
-    });
   });
 });

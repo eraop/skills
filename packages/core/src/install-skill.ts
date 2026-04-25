@@ -1,47 +1,32 @@
-import { cp, mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { BuildArtifactBuilders } from "./build-artifact.js";
-import { buildSkill } from "./build-skill.js";
 import { resolveInstallPath, type InstallScope } from "./locators.js";
-import type { Platform } from "./models.js";
+import { renderSkillMarkdown } from "./render-skill.js";
+import { loadSkill } from "./skill-loader.js";
 
 export async function installSkill(args: {
   skillRoot: string;
-  outputRoot: string;
-  target: Platform | "all";
+  outputRoot?: string;
   scope: InstallScope;
-  builders: BuildArtifactBuilders;
   projectRoot?: string;
+  home?: string;
 }) {
-  const artifacts = await buildSkill({
-    skillRoot: args.skillRoot,
-    outputRoot: args.outputRoot,
-    builders: args.builders
+  const skill = await loadSkill(args.skillRoot);
+  const installRoot = await resolveInstallPath({
+    scope: args.scope,
+    ...(args.projectRoot ? { projectRoot: args.projectRoot } : {}),
+    ...(args.home ? { home: args.home } : {})
   });
+  const destination = path.join(installRoot, skill.document.name);
 
-  const platforms =
-    args.target === "all" ? (Object.keys(artifacts) as Platform[]) : [args.target];
-  const results: Array<{ platform: Platform; destination: string }> = [];
+  await mkdir(installRoot, { recursive: true });
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  await writeFile(
+    path.join(destination, "SKILL.md"),
+    renderSkillMarkdown({ document: skill.document, body: skill.body }),
+    "utf8"
+  );
 
-  for (const platform of platforms) {
-    const artifact = artifacts[platform];
-    const installRoot = await resolveInstallPath({
-      platform,
-      scope: args.scope,
-      ...(args.projectRoot ? { projectRoot: args.projectRoot } : {})
-    });
-
-    if (!artifact) {
-      throw new Error(`No build artifact was produced for platform "${platform}"`);
-    }
-
-    await mkdir(installRoot, { recursive: true });
-
-    const destination = path.join(installRoot, artifact.skillName);
-    await rm(destination, { recursive: true, force: true });
-    await cp(artifact.artifactPath, destination, { recursive: true, force: true });
-    results.push({ platform, destination });
-  }
-
-  return results;
+  return [{ destination }];
 }

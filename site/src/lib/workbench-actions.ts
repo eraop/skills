@@ -217,15 +217,11 @@ export async function saveSkillDraft(
     version: draft.version,
     tags: draft.tags,
     triggers: draft.triggers,
-    platforms: draft.platforms,
-    ...(draft.platformOverrides
-      ? { platform_overrides: draft.platformOverrides }
-      : {}),
   })
   const artifacts = buildArtifacts(draft)
   await assertArtifactTargetsDoNotExist(
     root,
-    draft.platforms.map((platform) => artifacts[platform]),
+    Object.values(artifacts),
   )
   const skillYaml = YAML.stringify(document)
   const createdEntries: CreatedEntry[] = []
@@ -239,8 +235,8 @@ export async function saveSkillDraft(
     await writeTextFile(draftDir, "skill.yaml", skillYaml)
     await writeTextFile(draftDir, "body.md", draft.body)
 
-    for (const platform of draft.platforms) {
-      await writeArtifactFile(root as RemovableDirectoryHandle, artifacts[platform], createdEntries)
+    for (const artifact of Object.values(artifacts)) {
+      await writeArtifactFile(root as RemovableDirectoryHandle, artifact, createdEntries)
     }
 
     return artifacts
@@ -256,9 +252,7 @@ export async function deleteSkill(
 ) {
   await Promise.all([
     removeDirectoryIfPresent(root, ["skills", name]),
-    removeDirectoryIfPresent(root, ["dist", "codex", name]),
-    removeDirectoryIfPresent(root, ["dist", "copilot", name]),
-    removeDirectoryIfPresent(root, ["dist", "cursor", name]),
+    removeDirectoryIfPresent(root, ["dist", name]),
   ])
 }
 
@@ -275,10 +269,6 @@ export async function rebuildSkill(
     version: skill.version,
     tags: [...skill.tags],
     triggers: [...skill.triggers],
-    platforms: [...skill.platforms],
-    ...(skill.platformOverrides
-      ? { platformOverrides: skill.platformOverrides }
-      : {}),
     body: skill.body,
     sourceMeta: {
       rawFrontmatter: `name: ${skill.name}`,

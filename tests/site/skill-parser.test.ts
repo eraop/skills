@@ -12,21 +12,12 @@ name: frontend-design
 description: Create distinctive interfaces.
 triggers:
   - user asks to style a page
-platforms:
-  - codex
-  - copilot
-  - cursor
-platform_overrides:
-  codex:
-    notes:
-      - Keep this skill visible.
 ---
 This skill guides creation of distinctive interfaces.
 </skill>
 `);
 
     expect(draft.name).toBe("frontend-design");
-    expect(draft.platforms).toEqual(["codex", "copilot", "cursor"]);
     expect(draft.body).toContain("This skill guides");
     expect(draft.sourceMeta).toEqual({
       wrapperName: "frontend-design",
@@ -34,24 +25,11 @@ This skill guides creation of distinctive interfaces.
       rawFrontmatter: `name: frontend-design
 description: Create distinctive interfaces.
 triggers:
-  - user asks to style a page
-platforms:
-  - codex
-  - copilot
-  - cursor
-platform_overrides:
-  codex:
-    notes:
-      - Keep this skill visible.`,
-    });
-    expect(draft.platformOverrides).toEqual({
-      codex: {
-        notes: ["Keep this skill visible."],
-      },
+  - user asks to style a page`,
     });
   });
 
-  it("rejects an explicitly empty platform list", () => {
+  it("rejects legacy platform metadata from pasted skills", () => {
     expect(() =>
       parsePastedSkill(`
 <skill>
@@ -65,7 +43,7 @@ platforms: []
 Body
 </skill>
 `),
-    ).toThrow();
+    ).toThrow("Skill platform metadata is no longer supported.");
   });
 
   it("requires at least one trigger before the draft is considered valid", () => {
@@ -82,16 +60,15 @@ Body
     ).toThrow();
   });
 
-  it("preserves validated platform overrides on the parsed draft", () => {
-    const draft = parsePastedSkill(`
+  it("rejects platform overrides because shared skills no longer support them", () => {
+    expect(() =>
+      parsePastedSkill(`
 <skill>
 ---
 name: frontend-design
 description: Create distinctive interfaces.
 triggers:
   - user asks to style a page
-platforms:
-  - codex
 platform_overrides:
   codex:
     notes:
@@ -99,12 +76,7 @@ platform_overrides:
 ---
 Body
 </skill>
-`);
-
-    expect(draft.platformOverrides).toEqual({
-      codex: {
-        notes: ["Keep this skill visible."],
-      },
-    });
+`),
+    ).toThrow();
   });
 });

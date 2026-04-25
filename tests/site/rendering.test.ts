@@ -13,10 +13,9 @@ function makeSkill(overrides: Partial<PublishedSkill> = {}): PublishedSkill {
     version: "1.0.0",
     tags: [],
     triggers: [],
-    platforms: ["codex"],
     body: "# Hello\n\nSafe body.",
     bodyExcerpt: "Safe body.",
-    artifacts: [{ platform: "codex", entryFile: "SKILL.md" }],
+    artifacts: [{ entryFile: "SKILL.md" }],
     ...overrides,
   };
 }
@@ -62,6 +61,24 @@ describe("site rendering", () => {
     expect(html).toContain("<em>allowed</em>");
   });
 
+  it("renders triggers from skill metadata on detail pages", () => {
+    const html = renderDetailPage(
+      makeSkill({
+        triggers: [
+          "write code",
+          `<img src=x onerror="alert('trigger')">`,
+        ],
+      }),
+    );
+
+    expect(html).toContain("Triggers");
+    expect(html).toContain("write code");
+    expect(html).not.toContain("<img");
+    expect(html).toContain(
+      "&lt;img src=x onerror=&quot;alert(&#39;trigger&#39;)&quot;&gt;",
+    );
+  });
+
   it("shows local rebuild and delete actions only when a live repo is connected", () => {
     const connectedHtml = renderDetailPage(makeSkill(), {
       workbenchAvailable: true,
@@ -84,12 +101,8 @@ describe("site rendering", () => {
     expect(readOnlyHtml).not.toContain('id="delete-skill"');
   });
 
-  it("renders install commands for each supported platform on detail pages", () => {
-    const html = renderDetailPage(
-      makeSkill({
-        platforms: ["codex", "copilot", "cursor"],
-      }),
-    );
+  it("renders one install command on detail pages", () => {
+    const html = renderDetailPage(makeSkill());
 
     expect(html).toContain("Install");
     expect(html).not.toContain("npm exec -- skills");
@@ -97,15 +110,8 @@ describe("site rendering", () => {
     expect(html).toContain(
       "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails",
     );
-    expect(html).toContain(
-      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target codex",
-    );
-    expect(html).toContain(
-      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target copilot",
-    );
-    expect(html).toContain(
-      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --target cursor",
-    );
+    expect(html).not.toContain("--target");
+    expect(html).not.toContain("--platform");
   });
 
   it("escapes repository labels in the workbench panel", () => {

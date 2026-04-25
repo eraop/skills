@@ -17,15 +17,12 @@ export function parseArchiveSkill(args: {
     version: document.version,
     tags: [...document.tags],
     triggers: [...document.triggers],
-    platforms: [...document.platforms],
-    ...(document.platform_overrides
-      ? { platformOverrides: document.platform_overrides }
-      : {}),
     body: args.body,
     bodyExcerpt: firstParagraph,
-    artifacts: document.platforms.map((platform) => ({
-      platform,
-      entryFile: "SKILL.md",
-    })),
+    artifacts: [
+      {
+        entryFile: "SKILL.md",
+      },
+    ],
   };
 }

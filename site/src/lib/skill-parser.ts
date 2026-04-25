@@ -2,9 +2,7 @@ import YAML from "yaml"
 import { parseSkillDocument } from "../../../packages/core/src/schema.js"
 import {
   formatSkillTitle,
-  isSkillPlatform,
   SKILL_NAME_PATTERN,
-  VALID_PLATFORMS,
   type SkillDraft,
 } from "./skill-schema.js"
 
@@ -43,18 +41,8 @@ export function parsePastedSkill(source: string): SkillDraft {
     throw new Error("Skill description is required.")
   }
 
-  const rawPlatforms = documentRecord.platforms
-  if (Array.isArray(rawPlatforms) && rawPlatforms.length === 0) {
-    throw new Error("Skill platforms must include at least one platform when provided.")
-  }
-
-  const platforms =
-    Array.isArray(rawPlatforms) && rawPlatforms.length > 0
-      ? rawPlatforms.map((value) => String(value).trim())
-      : [...VALID_PLATFORMS]
-
-  if (!platforms.every(isSkillPlatform)) {
-    throw new Error("Skill platforms must be codex, copilot, or cursor.")
+  if ("platforms" in documentRecord || "platform_overrides" in documentRecord) {
+    throw new Error("Skill platform metadata is no longer supported.")
   }
 
   const rawTriggers = documentRecord.triggers
@@ -76,10 +64,6 @@ export function parsePastedSkill(source: string): SkillDraft {
       ? documentRecord.tags.map((value) => String(value))
       : [],
     triggers,
-    platforms,
-    ...(documentRecord.platform_overrides
-      ? { platform_overrides: documentRecord.platform_overrides }
-      : {}),
   })
 
   const wrapperNameMatch = normalized.match(/<name>([\s\S]*?)<\/name>/)
@@ -92,10 +76,6 @@ export function parsePastedSkill(source: string): SkillDraft {
     version: parsedDocument.version,
     tags: parsedDocument.tags,
     triggers: parsedDocument.triggers,
-    platforms: parsedDocument.platforms,
-    ...(parsedDocument.platform_overrides
-      ? { platformOverrides: parsedDocument.platform_overrides }
-      : {}),
     body,
     sourceMeta: {
       ...(wrapperNameMatch?.[1]?.trim()

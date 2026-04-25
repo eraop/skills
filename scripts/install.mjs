@@ -6,12 +6,11 @@ import { fileURLToPath } from "node:url";
 
 const DEFAULT_BASE_URL =
   "https://raw.githubusercontent.com/eraop/skills/main";
-const SUPPORTED_PLATFORMS = ["codex", "copilot", "cursor"];
 
 function usage() {
   return [
     "Usage:",
-    "  node scripts/install.mjs <skill-name> [--target codex|copilot|cursor|all] [--scope global|project]",
+    "  node scripts/install.mjs <skill-name> [--scope global|project]",
     "",
     "Remote one-line usage:",
     `  curl -fsSL ${DEFAULT_BASE_URL}/scripts/install.mjs | node - <skill-name>`,
@@ -21,67 +20,79 @@ function usage() {
 export function parseSkillDocument(source) {
   const name = source.match(/^name:\s*"?([^"\n]+)"?\s*$/m)?.[1]?.trim();
   const title = source.match(/^title:\s*"?([^"\n]+)"?\s*$/m)?.[1]?.trim();
-  const platformsBlock = source.match(/^platforms:\s*\n((?:\s*-\s*.+\n?)+)/m)?.[1] ?? "";
-  const platforms = platformsBlock
+  const description = source.match(/^description:\s*"?([^"\n]+)"?\s*$/m)?.[1]?.trim();
+  const triggersBlock = source.match(/^triggers:\s*\n((?:\s*-\s*.+\n?)+)/m)?.[1] ?? "";
+  const triggers = triggersBlock
     .split("\n")
     .map((line) => line.match(/^\s*-\s*"?([^"\n]+)"?\s*$/)?.[1]?.trim())
     .filter(Boolean);
 
-  if (!name || !title || platforms.length === 0) {
-    throw new Error("skill.yaml must include name, title, and platforms.");
+  if (!name || !description || triggers.length === 0) {
+    throw new Error("skill.yaml must include name, description, and triggers.");
   }
 
-  return { name, title, platforms };
+  return { name, title: title ?? name, description, triggers };
 }
 
-export function buildSkillMarkdown(title, body) {
+function formatYamlScalar(value) {
+  if (
+    value === "" ||
+    /^\s|\s$/.test(value) ||
+    /[\n\r\t]/.test(value) ||
+    /(^[-?:,[\]{}#&*!|>'"%@`])|(:\s)|(\s#)/.test(value) ||
+    /^(true|false|null|~|\d)/i.test(value)
+  ) {
+    return JSON.stringify(value);
+  }
+
+  return value;
+}
+
+function buildFrontmatter(document, options = {}) {
+  const includeTriggers = options.includeTriggers ?? true;
+  const lines = [
+    `name: ${formatYamlScalar(document.name)}`,
+    `description: ${formatYamlScalar(document.description)}`,
+  ];
+
+  if (includeTriggers && document.triggers.length > 0) {
+    lines.push(
+      "triggers:",
+      ...document.triggers.map((trigger) => `  - ${formatYamlScalar(trigger)}`),
+    );
+  }
+
+  return lines.join("\n");
+}
+
+export function buildSkillMarkdown(document, body, options = {}) {
+  const includeTriggers = options.includeTriggers ?? true;
   const trimmed = body.trimStart();
+  const formattedBody = trimmed.startsWith("# ") ? body : `# ${document.title}\n\n${body}`;
 
-  if (trimmed.startsWith("# ")) {
-    return body;
-  }
-
-  return `# ${title}\n\n${body}`;
+  return ["---", buildFrontmatter(document, { ...options, includeTriggers }), "---", "", formattedBody].join("\n");
 }
 
-export function resolveInstallRoot(platform, scope, options = {}) {
+export function resolveInstallRoot(scope, options = {}) {
   const home = options.home ?? os.homedir();
   const cwd = options.cwd ?? process.cwd();
 
   if (scope === "project") {
-    const projectDirs = {
-      codex: path.join(cwd, ".codex", "skills"),
-      copilot: path.join(cwd, ".github", "copilot", "skills"),
-      cursor: path.join(cwd, ".cursor", "skills"),
-    };
-
-    return projectDirs[platform];
+    return path.join(cwd, ".agents", "skills");
   }
 
-  const globalDirs = {
-    codex: path.join(home, ".codex", "skills"),
-    copilot: path.join(home, ".config", "copilot", "skills"),
-    cursor: path.join(home, ".cursor", "skills"),
-  };
-
-  return globalDirs[platform];
+  return path.join(home, ".agents", "skills");
 }
 
 function parseArgs(argv) {
   const args = {
     skillName: undefined,
-    target: "all",
     scope: "global",
     baseUrl: process.env.SKILLS_BASE_URL ?? DEFAULT_BASE_URL,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
-
-    if (value === "--target") {
-      args.target = argv[++index];
-      continue;
-    }
 
     if (value === "--scope") {
       args.scope = argv[++index];
@@ -128,10 +139,6 @@ export async function installRemoteSkill(args) {
     throw new Error('--scope must be "global" or "project".');
   }
 
-  if (args.target !== "all" && !SUPPORTED_PLATFORMS.includes(args.target)) {
-    throw new Error('--target must be "codex", "copilot", "cursor", or "all".');
-  }
-
   const baseUrl = args.baseUrl.replace(/\/$/, "");
   const skillBaseUrl = `${baseUrl}/skills/${encodeURIComponent(args.skillName)}`;
   const [documentSource, body] = await Promise.all([
@@ -139,29 +146,16 @@ export async function installRemoteSkill(args) {
     fetchText(`${skillBaseUrl}/body.md`),
   ]);
   const document = parseSkillDocument(documentSource);
-  const platforms =
-    args.target === "all"
-      ? document.platforms.filter((platform) => SUPPORTED_PLATFORMS.includes(platform))
-      : [args.target];
-  const contents = buildSkillMarkdown(document.title, body);
-  const installed = [];
+  const installRoot = resolveInstallRoot(args.scope, args);
+  const destination = path.join(installRoot, document.name);
+  const contents = buildSkillMarkdown(document, body);
 
-  for (const platform of platforms) {
-    if (!document.platforms.includes(platform)) {
-      throw new Error(`Skill "${document.name}" does not support platform "${platform}".`);
-    }
+  await mkdir(installRoot, { recursive: true });
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  await writeFile(path.join(destination, "SKILL.md"), contents, "utf8");
 
-    const installRoot = resolveInstallRoot(platform, args.scope, args);
-    const destination = path.join(installRoot, document.name);
-
-    await mkdir(installRoot, { recursive: true });
-    await rm(destination, { recursive: true, force: true });
-    await mkdir(destination, { recursive: true });
-    await writeFile(path.join(destination, "SKILL.md"), contents, "utf8");
-    installed.push({ platform, destination });
-  }
-
-  return installed;
+  return [{ destination }];
 }
 
 async function main() {
@@ -175,7 +169,7 @@ async function main() {
   const installed = await installRemoteSkill(args);
 
   for (const result of installed) {
-    console.log(`${result.platform}: ${result.destination}`);
+    console.log(result.destination);
   }
 }
 

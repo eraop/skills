@@ -10,7 +10,6 @@ type CreateAnswers = {
   description: string;
   triggers: string[];
   tags: string[];
-  platforms: Array<"codex" | "copilot" | "cursor">;
 };
 
 const NAME_PATTERN = /^[a-z0-9-]+$/;
@@ -55,17 +54,6 @@ export async function runCreateCommand(repoRoot: string) {
         type: "list",
         name: "tags",
         message: "Tags (comma separated)"
-      },
-      {
-        type: "multiselect",
-        name: "platforms",
-        message: "Platforms",
-        choices: [
-          { title: "Codex", value: "codex" },
-          { title: "Copilot", value: "copilot" },
-          { title: "Cursor", value: "cursor" }
-        ],
-        min: 1
       }
     ],
     {
@@ -95,8 +83,6 @@ export async function runCreateCommand(repoRoot: string) {
     ...(answers.tags.length > 0 ? ["tags:", ...toYamlList(answers.tags)] : ["tags: []"]),
     "triggers:",
     ...toYamlList(answers.triggers),
-    "platforms:",
-    ...toYamlList(answers.platforms),
     ""
   ];
 

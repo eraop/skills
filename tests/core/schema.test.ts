@@ -9,21 +9,10 @@ describe("parseSkillDocument", () => {
       description: "Keep generated code simple, consistent, and narrowly scoped.",
       version: "0.1.0",
       tags: ["workflow"],
-      triggers: ["write code"],
-      platforms: ["codex", "copilot", "cursor"],
-      platform_overrides: {
-        codex: {},
-        copilot: {},
-        cursor: {}
-      }
+      triggers: ["write code"]
     });
 
     expect(parsed.name).toBe("code-generation-guardrails");
-    expect(parsed.platforms).toEqual(["codex", "copilot", "cursor"]);
-    expect(parsed.platform_overrides).toEqual({
-      codex: {},
-      copilot: {},
-      cursor: {}
-    });
+    expect(parsed.triggers).toEqual(["write code"]);
   });
 });

@@ -8,10 +8,5 @@
   "include": [
     "src/**/*.ts"
   ],
-  "references": [
-    { "path": "../core" },
-    { "path": "../adapter-codex" },
-    { "path": "../adapter-copilot" },
-    { "path": "../adapter-cursor" }
-  ]
+  "references": [{ "path": "../core" }]
 }

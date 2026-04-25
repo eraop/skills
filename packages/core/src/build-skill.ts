@@ -1,30 +1,31 @@
 import path from "node:path";
-import type { BuildArtifact, BuildArtifactBuilders } from "./build-artifact.js";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import type { BuildArtifact } from "./build-artifact.js";
+import { renderSkillMarkdown } from "./render-skill.js";
 import { loadSkill } from "./skill-loader.js";
 
 export async function buildSkill(args: {
   skillRoot: string;
   outputRoot: string;
-  builders: BuildArtifactBuilders;
-}): Promise<Partial<Record<string, BuildArtifact>>> {
+}): Promise<BuildArtifact> {
   const skill = await loadSkill(args.skillRoot);
+  const artifactRoot = path.join(args.outputRoot, skill.document.name);
 
-  const entries = await Promise.all(
-    skill.document.platforms.map(async (platform) => {
-      const builder = args.builders[platform];
-
-      if (!builder) {
-        throw new Error(`Missing builder for platform "${platform}"`);
-      }
-
-      const artifact = await builder({
-        skill,
-        artifactRoot: path.join(args.outputRoot, platform, skill.document.name)
-      });
-
-      return [platform, artifact] as const;
-    })
+  await rm(artifactRoot, { recursive: true, force: true });
+  await mkdir(artifactRoot, { recursive: true });
+  await writeFile(
+    path.join(artifactRoot, "SKILL.md"),
+    renderSkillMarkdown({ document: skill.document, body: skill.body }),
+    "utf8"
   );
 
-  return Object.fromEntries(entries);
+  return {
+    skillName: skill.document.name,
+    artifactPath: artifactRoot,
+    manifest: {
+      name: skill.document.name,
+      description: skill.document.description
+    },
+    installHints: ["Install into the shared .agents skills directory."]
+  };
 }
