@@ -1,15 +1,18 @@
 export function renderSkillEditor() {
   return `
-    <section class="mt-6 rounded-lg border border-brass/20 bg-black/25 p-5 shadow-2xl shadow-black/20">
-      <label class="font-mono text-xs font-semibold text-copper" for="skill-source">Paste a complete skill</label>
-      <textarea class="mt-4 min-h-[28rem] w-full resize-y border border-white/10 bg-ink/80 p-4 font-mono text-sm leading-6 text-porcelain outline-none transition placeholder:text-mist/60 focus:border-malachite" id="skill-source" rows="18" spellcheck="false"></textarea>
-      <div class="mt-5 grid gap-3 border-y border-white/10 py-4 text-sm text-mist sm:grid-cols-2">
-        <p><strong class="block font-mono text-xs text-porcelain">Name</strong> <span id="skill-preview-name">Not parsed yet.</span></p>
-        <p><strong class="block font-mono text-xs text-porcelain">Description</strong> <span id="skill-preview-description">-</span></p>
-        <pre class="max-h-64 overflow-auto border border-white/10 bg-black/30 p-4 font-mono text-xs leading-5 text-mist sm:col-span-2" id="skill-body-preview"></pre>
+    <section class="command-panel mt-6" data-ui="skill-editor-command">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <label class="section-kicker" for="skill-source">Paste a complete skill</label>
+        <span class="muted-chip">Local parser</span>
       </div>
-      <button class="mt-5 inline-flex h-10 items-center justify-center border border-malachite/50 bg-malachite px-4 text-sm font-semibold text-ink transition hover:bg-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite disabled:hover:bg-malachite" id="save-skill" type="button">Save and Build</button>
-      <pre class="mt-4 whitespace-pre-wrap border border-white/10 bg-white/[0.04] p-4 font-mono text-xs leading-5 text-mist" id="skill-validation"></pre>
+      <textarea class="command-input mt-4" id="skill-source" rows="18" spellcheck="false"></textarea>
+      <div class="metadata-grid mt-5 text-sm text-mist">
+        <p class="metadata-cell"><strong>Name</strong> <span id="skill-preview-name">Not parsed yet.</span></p>
+        <p class="metadata-cell"><strong>Description</strong> <span id="skill-preview-description">-</span></p>
+        <pre class="command-output max-h-64 sm:col-span-2" id="skill-body-preview"></pre>
+      </div>
+      <button class="command-button-primary mt-5 disabled:hover:translate-y-0" id="save-skill" type="button">Save and Build</button>
+      <pre class="command-output mt-4 whitespace-pre-wrap" id="skill-validation"></pre>
     </section>
   `
 }

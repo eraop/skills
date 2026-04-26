@@ -3,7 +3,7 @@ const githubRepositoryUrl = "https://github.com/eraop/skills";
 function renderGithubLink() {
   return `
     <a
-      class="group absolute right-4 top-4 z-30 inline-flex h-12 w-12 items-center justify-center rounded-full border border-malachite/25 bg-onyx/80 text-porcelain shadow-2xl shadow-malachite/10 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:border-malachite/70 hover:bg-malachite hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite"
+      class="command-github-link"
       href="${githubRepositoryUrl}"
       target="_blank"
       rel="noreferrer"
@@ -23,12 +23,17 @@ function renderGithubLink() {
 }
 
 export function renderArchiveShell(content: string, sidebar = "") {
+  const hasSidebar = sidebar.trim().length > 0;
+  const layoutClass = hasSidebar
+    ? "command-layout command-layout-with-sidebar"
+    : "command-layout command-layout-single";
+
   return `
-    <main class="relative mx-auto min-h-screen w-full max-w-7xl px-4 py-5 text-porcelain sm:px-6 lg:px-8">
+    <main class="command-shell" data-ui="command-deck-shell">
       ${renderGithubLink()}
-      <div class="grid grid-cols-1 gap-5 pt-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:pt-20">
+      <div class="${layoutClass}">
         <section class="min-w-0">${content}</section>
-        ${sidebar ? `<section class="min-w-0">${sidebar}</section>` : ""}
+        ${hasSidebar ? `<section class="min-w-0">${sidebar}</section>` : ""}
       </div>
     </main>
   `;

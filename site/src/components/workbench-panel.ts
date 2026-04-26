@@ -11,28 +11,34 @@ export function renderWorkbenchPanel(args: {
       : undefined;
 
     return `
-      <section class="sticky top-20 rounded-lg border border-brass/20 bg-onyx/75 p-5 text-sm text-mist shadow-2xl shadow-black/20 backdrop-blur">
-        <p class="font-mono text-xs font-semibold text-copper">Workbench</p>
+      <section class="command-panel sticky top-20 text-sm text-mist" data-ui="workbench-command-panel">
+        <div class="flex items-center justify-between gap-3">
+          <p class="section-kicker">Workbench</p>
+          <span class="muted-chip">Offline</span>
+        </div>
         <p class="mt-4 leading-6">Connect a local repository to unlock create, rebuild, and delete actions.</p>
         ${
           rememberedRepoLabel
             ? `<p class="mt-3 leading-6">Last selected repository: ${rememberedRepoLabel}. Reconnect to enable local actions.</p>`
             : ""
         }
-        <button class="mt-5 inline-flex h-10 w-full items-center justify-center border border-malachite/50 bg-malachite px-4 font-semibold text-ink transition hover:bg-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" id="connect-repo" type="button">Select Skill Repo</button>
+        <button class="command-button-primary mt-5 w-full" id="connect-repo" type="button">Select Skill Repo</button>
       </section>
     `;
   }
 
   const repoLabel = escapeHtml(args.repoLabel ?? "selected repository");
   return `
-    <section class="sticky top-20 rounded-lg border border-brass/20 bg-onyx/75 p-5 text-sm text-mist shadow-2xl shadow-black/20 backdrop-blur">
-      <p class="font-mono text-xs font-semibold text-copper">Workbench</p>
-      <p class="mt-4 leading-6">Connected to ${repoLabel}.</p>
+    <section class="command-panel sticky top-20 text-sm text-mist" data-ui="workbench-command-panel">
+      <div class="flex items-center justify-between gap-3">
+        <p class="section-kicker">Workbench</p>
+        <span class="signal-chip">Connected</span>
+      </div>
+      <p class="mt-4 leading-6"><strong class="font-mono text-xs uppercase text-porcelain">Repository link</strong><br />Connected to ${repoLabel}.</p>
       <p class="mt-3 leading-6">Paste a full wrapped skill to create source files and local artifacts.</p>
       <div class="mt-5 grid grid-cols-2 gap-3">
-        <a class="inline-flex h-10 items-center justify-center border border-malachite/50 bg-malachite px-4 font-semibold text-ink transition hover:bg-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" href="#/edit">New Skill</a>
-        <button class="inline-flex h-10 items-center justify-center border border-white/15 bg-white/10 px-4 font-semibold text-porcelain transition hover:border-malachite/50 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" id="refresh-skills" type="button">Refresh</button>
+        <a class="command-button-primary" href="#/edit">New Skill</a>
+        <button class="command-button-secondary" id="refresh-skills" type="button">Refresh</button>
       </div>
     </section>
   `;

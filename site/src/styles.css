@@ -5,27 +5,36 @@
   --font-display: "Avenir Next Condensed", "Avenir Next", "Helvetica Neue", sans-serif;
   --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
 
-  --color-ink: #070817;
-  --color-onyx: #11152d;
-  --color-porcelain: #eef4ff;
-  --color-mist: #aeb9df;
-  --color-brass: #9b87ff;
+  --color-ink: #040711;
+  --color-void: #02040a;
+  --color-onyx: #0b1220;
+  --color-panel: #101827;
+  --color-panel-high: #172236;
+  --color-porcelain: #eef7ff;
+  --color-mist: #9fb2c7;
+  --color-brass: #6f86ff;
   --color-copper: #ff4fd8;
-  --color-malachite: #45e8ff;
+  --color-malachite: #7cf8d2;
+  --color-run: #22c55e;
+  --color-warning: #f7c948;
 }
 
 html {
   min-height: 100%;
-  background: #070817;
+  background: var(--color-void);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   background:
-    linear-gradient(132deg, rgba(69, 232, 255, 0.14), transparent 28%),
-    linear-gradient(232deg, rgba(255, 79, 216, 0.16), transparent 34%),
-    linear-gradient(180deg, #16183a 0%, #080914 72%, #05060f 100%);
+    linear-gradient(128deg, rgba(111, 134, 255, 0.16), transparent 32%),
+    linear-gradient(212deg, rgba(124, 248, 210, 0.11), transparent 36%),
+    linear-gradient(180deg, #08111f 0%, #040711 52%, #02040a 100%);
   color: var(--color-porcelain);
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -34,15 +43,14 @@ body {
 body::before {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   content: "";
   background-image:
-    linear-gradient(rgba(69, 232, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(155, 135, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(135deg, transparent 0 47%, rgba(255, 255, 255, 0.045) 48% 52%, transparent 53% 100%);
-  background-size: 44px 44px, 44px 44px, 180px 180px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 88%);
+    linear-gradient(rgba(124, 248, 210, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 134, 255, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.18) 76%, transparent);
 }
 
 body::after {
@@ -51,9 +59,10 @@ body::after {
   z-index: -1;
   pointer-events: none;
   content: "";
-  background: linear-gradient(180deg, transparent, rgba(69, 232, 255, 0.08), transparent);
-  background-size: 100% 9px;
-  opacity: 0.18;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 16%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 7px);
+  opacity: 0.44;
 }
 
 a {
@@ -61,6 +70,7 @@ a {
 }
 
 button {
+  cursor: pointer;
   font: inherit;
 }
 
@@ -69,9 +79,288 @@ button:disabled {
   opacity: 0.48;
 }
 
+::selection {
+  background: rgba(124, 248, 210, 0.28);
+  color: var(--color-porcelain);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 @layer components {
+  .command-shell {
+    @apply relative mx-auto min-h-screen w-full max-w-7xl px-4 py-5 text-porcelain sm:px-6 lg:px-8;
+  }
+
+  .command-layout {
+    @apply grid grid-cols-1 gap-5 lg:gap-6;
+  }
+
+  .command-layout-single {
+    @apply pt-4 sm:pt-6;
+  }
+
+  .command-layout-with-sidebar {
+    @apply pt-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:pt-20;
+  }
+
+  .command-github-link {
+    @apply absolute right-4 top-4 z-30 inline-flex h-12 w-12 items-center justify-center rounded-lg border text-porcelain backdrop-blur-xl transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+    border-color: rgba(124, 248, 210, 0.24);
+    background: rgba(11, 18, 32, 0.82);
+    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .command-github-link:hover {
+    color: var(--color-ink);
+    border-color: rgba(124, 248, 210, 0.76);
+    background: var(--color-malachite);
+    transform: translateY(-2px);
+  }
+
+  .command-surface,
+  .command-panel,
+  .command-empty,
+  .module-card {
+    position: relative;
+    border: 1px solid rgba(124, 248, 210, 0.16);
+    background:
+      linear-gradient(135deg, rgba(124, 248, 210, 0.105), rgba(111, 134, 255, 0.055) 42%, rgba(6, 13, 24, 0.82)),
+      rgba(11, 18, 32, 0.82);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px);
+  }
+
+  .command-surface {
+    @apply overflow-hidden rounded-lg p-6 pb-7 sm:p-8 sm:pb-9;
+  }
+
+  .command-empty {
+    @apply max-w-2xl overflow-hidden rounded-lg p-6 sm:p-8;
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .command-surface::before,
+  .command-panel::before,
+  .command-empty::before,
+  .module-card::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    pointer-events: none;
+    content: "";
+    background: linear-gradient(90deg, transparent, rgba(124, 248, 210, 0.86), rgba(111, 134, 255, 0.62), transparent);
+  }
+
+  .command-surface::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+    background-image:
+      linear-gradient(rgba(124, 248, 210, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(111, 134, 255, 0.06) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.74), transparent 74%);
+  }
+
+  .command-surface > *,
+  .command-panel > *,
+  .command-empty > *,
+  .module-card > * {
+    position: relative;
+  }
+
+  .command-panel {
+    @apply rounded-lg p-5;
+  }
+
+  .module-card {
+    @apply block h-full overflow-hidden rounded-lg p-5 text-porcelain transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+  }
+
+  .module-card:hover {
+    border-color: rgba(124, 248, 210, 0.48);
+    background:
+      linear-gradient(135deg, rgba(124, 248, 210, 0.14), rgba(111, 134, 255, 0.07) 45%, rgba(9, 18, 32, 0.88)),
+      rgba(16, 24, 39, 0.9);
+    box-shadow: 0 30px 88px rgba(0, 0, 0, 0.38), 0 0 34px rgba(124, 248, 210, 0.07);
+    transform: translateY(-3px);
+  }
+
+  .directory-search {
+    @apply min-h-11 w-full rounded-md border px-4 font-mono text-sm text-porcelain outline-none transition placeholder:text-mist/60 focus:border-malachite focus:ring-2 focus:ring-malachite/20;
+    border-color: rgba(159, 178, 199, 0.2);
+    background: rgba(2, 4, 10, 0.54);
+  }
+
+  .directory-tab,
+  .directory-tab-active {
+    @apply inline-flex min-h-10 items-center gap-2 rounded-md border px-3 font-mono text-xs font-semibold uppercase transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+  }
+
+  .directory-tab {
+    border-color: rgba(159, 178, 199, 0.18);
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--color-mist);
+  }
+
+  .directory-tab:hover {
+    border-color: rgba(124, 248, 210, 0.44);
+    color: var(--color-porcelain);
+  }
+
+  .directory-tab-active {
+    color: var(--color-ink);
+    border-color: rgba(124, 248, 210, 0.68);
+    background: linear-gradient(135deg, var(--color-malachite), #8dffb8);
+  }
+
+  .directory-tab span,
+  .directory-tab-active span {
+    @apply rounded-sm px-1.5 py-0.5;
+    background: rgba(2, 4, 10, 0.24);
+  }
+
+  .section-kicker {
+    @apply font-mono text-xs font-semibold uppercase text-malachite;
+  }
+
+  .signal-chip {
+    @apply inline-flex min-h-8 items-center rounded-md border px-3 py-1 font-mono text-xs font-semibold uppercase;
+    border-color: rgba(124, 248, 210, 0.26);
+    background: rgba(124, 248, 210, 0.1);
+    color: var(--color-malachite);
+  }
+
+  .muted-chip {
+    @apply inline-flex min-h-8 items-center rounded-md border px-3 py-1 font-mono text-xs;
+    border-color: rgba(159, 178, 199, 0.18);
+    background: rgba(159, 178, 199, 0.07);
+    color: var(--color-mist);
+  }
+
+  .danger-panel {
+    border-color: rgba(255, 79, 216, 0.28);
+    background:
+      linear-gradient(135deg, rgba(255, 79, 216, 0.11), rgba(111, 134, 255, 0.045)),
+      rgba(11, 18, 32, 0.82);
+  }
+
+  .command-stat-grid {
+    @apply mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3;
+  }
+
+  .command-stat {
+    @apply rounded-lg border p-4;
+    border-color: rgba(159, 178, 199, 0.16);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .command-stat strong {
+    @apply block font-display text-2xl font-semibold leading-none text-porcelain;
+  }
+
+  .command-stat span {
+    @apply mt-2 block font-mono text-xs uppercase text-mist;
+  }
+
+  .metadata-grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2;
+  }
+
+  .metadata-cell {
+    @apply rounded-lg border p-4 text-sm text-mist;
+    border-color: rgba(159, 178, 199, 0.15);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .metadata-cell strong {
+    @apply mb-1 block font-mono text-xs uppercase text-porcelain;
+  }
+
+  .command-button-primary,
+  .command-button-secondary,
+  .command-button-danger {
+    @apply inline-flex min-h-11 items-center justify-center rounded-md border px-4 text-sm font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4;
+  }
+
+  .command-button-primary {
+    @apply text-ink focus-visible:outline-malachite;
+    border-color: rgba(124, 248, 210, 0.64);
+    background: linear-gradient(135deg, var(--color-malachite), #8dffb8);
+    box-shadow: 0 12px 34px rgba(124, 248, 210, 0.13);
+  }
+
+  .command-button-primary:hover {
+    background: linear-gradient(135deg, #d9fff4, var(--color-malachite));
+    transform: translateY(-1px);
+  }
+
+  .command-button-secondary {
+    @apply text-porcelain focus-visible:outline-malachite;
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .command-button-secondary:hover {
+    border-color: rgba(124, 248, 210, 0.48);
+    background: rgba(124, 248, 210, 0.1);
+  }
+
+  .command-button-danger {
+    @apply text-porcelain focus-visible:outline-copper;
+    border-color: rgba(255, 79, 216, 0.52);
+    background: rgba(255, 79, 216, 0.13);
+  }
+
+  .command-button-danger:hover {
+    background: rgba(255, 79, 216, 0.22);
+  }
+
+  .console-link {
+    @apply inline-flex min-h-11 items-center font-mono text-sm text-mist transition hover:text-malachite focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+  }
+
+  .command-code {
+    @apply block break-all rounded-md border px-3 py-2 font-mono text-sm text-porcelain;
+    border-color: rgba(159, 178, 199, 0.2);
+    background: rgba(2, 4, 10, 0.52);
+  }
+
+  .summary-line {
+    @apply rounded-lg border px-4 py-3;
+    border-color: rgba(159, 178, 199, 0.14);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .command-input,
+  .command-output {
+    @apply w-full rounded-lg border font-mono text-sm text-porcelain outline-none transition focus:border-malachite focus:ring-2 focus:ring-malachite/20;
+    border-color: rgba(159, 178, 199, 0.18);
+    background: rgba(2, 4, 10, 0.54);
+  }
+
+  .command-input {
+    @apply min-h-[28rem] resize-y p-4 leading-6 placeholder:text-mist/60;
+  }
+
+  .command-output {
+    @apply overflow-auto p-4 text-xs leading-5 text-mist;
+  }
+
   .skill-content {
-    @apply mt-8 border-t border-brass/20 pt-7 text-base leading-7 text-mist;
+    @apply mt-8 border-t pt-7 text-base leading-7 text-mist;
+    border-color: rgba(124, 248, 210, 0.15);
   }
 
   .skill-content > :first-child {
@@ -82,7 +371,7 @@ button:disabled {
   .skill-content h2,
   .skill-content h3 {
     @apply font-display leading-tight text-porcelain;
-    text-shadow: 0 0 28px rgba(155, 135, 255, 0.28);
+    text-shadow: 0 0 28px rgba(124, 248, 210, 0.18);
   }
 
   .skill-content h1 {
@@ -100,7 +389,8 @@ button:disabled {
   .skill-content p,
   .skill-content ul,
   .skill-content ol,
-  .skill-content pre {
+  .skill-content pre,
+  .skill-content table {
     @apply my-5;
   }
 
@@ -114,15 +404,19 @@ button:disabled {
   }
 
   .skill-content a {
-    @apply text-malachite underline decoration-malachite/40 underline-offset-4 transition hover:text-porcelain;
+    @apply text-malachite underline decoration-malachite/40 underline-offset-4 transition hover:text-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
   }
 
   .skill-content code {
-    @apply rounded-md border border-malachite/20 bg-malachite/10 px-1.5 py-0.5 font-mono text-sm text-porcelain;
+    @apply rounded-md border px-1.5 py-0.5 font-mono text-sm text-porcelain;
+    border-color: rgba(124, 248, 210, 0.2);
+    background: rgba(124, 248, 210, 0.1);
   }
 
   .skill-content pre {
-    @apply overflow-x-auto rounded-lg border border-brass/20 bg-black/50 p-4 text-sm text-porcelain shadow-2xl shadow-black/20;
+    @apply overflow-x-auto rounded-lg border p-4 text-sm text-porcelain shadow-2xl shadow-black/20;
+    border-color: rgba(159, 178, 199, 0.18);
+    background: rgba(2, 4, 10, 0.62);
   }
 
   .skill-content pre code {
@@ -130,6 +424,23 @@ button:disabled {
   }
 
   .skill-content blockquote {
-    @apply my-6 border-l border-malachite/60 pl-5 text-porcelain;
+    @apply my-6 border-l pl-5 text-porcelain;
+    border-color: rgba(124, 248, 210, 0.64);
+  }
+
+  .skill-content table {
+    @apply block w-full overflow-x-auto rounded-lg border text-sm;
+    border-color: rgba(159, 178, 199, 0.16);
+  }
+
+  .skill-content th,
+  .skill-content td {
+    @apply border-b px-3 py-2 text-left;
+    border-color: rgba(159, 178, 199, 0.14);
+  }
+
+  .skill-content th {
+    @apply font-mono text-xs uppercase text-porcelain;
+    background: rgba(124, 248, 210, 0.07);
   }
 }

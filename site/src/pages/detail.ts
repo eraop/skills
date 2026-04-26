@@ -4,6 +4,7 @@ import { renderMarkdown } from "../lib/markdown.js";
 
 const remoteInstallerUrl =
   "https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs";
+const repositoryUrl = "https://github.com/eraop/skills";
 
 export function renderDetailPage(
   skill: PublishedSkill,
@@ -16,12 +17,14 @@ export function renderDetailPage(
   const title = escapeHtml(skill.title);
   const description = escapeHtml(skill.description);
   const version = escapeHtml(skill.version);
+  const bodyExcerpt = escapeHtml(skill.bodyExcerpt || skill.description);
+  const triggerSummary = skill.triggers.slice(0, 3);
   const triggers =
     skill.triggers.length > 0
       ? skill.triggers
           .map(
             (trigger) =>
-              `<li class="border border-malachite/20 bg-malachite/10 px-2.5 py-1 font-mono text-xs text-mist">${escapeHtml(trigger)}</li>`,
+              `<li class="muted-chip">${escapeHtml(trigger)}</li>`,
           )
           .join("")
       : `<li class="font-mono text-xs text-mist">-</li>`;
@@ -34,10 +37,11 @@ export function renderDetailPage(
       : "This published view is read-only.";
   const actions = showWorkbenchActions
     ? `
-      <section class="mt-8 rounded-lg border border-copper/30 bg-copper/10 p-5 shadow-2xl shadow-black/15">
-        <div class="flex flex-wrap gap-3">
-          <button class="inline-flex h-10 items-center justify-center border border-malachite/50 bg-malachite px-4 text-sm font-semibold text-ink transition hover:bg-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" id="rebuild-skill" data-skill="${name}" type="button">Rebuild</button>
-          <button class="inline-flex h-10 items-center justify-center border border-copper/60 bg-copper/25 px-4 text-sm font-semibold text-porcelain transition hover:bg-copper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" id="delete-skill" data-skill="${name}" type="button">Delete</button>
+      <section class="command-panel danger-panel mt-8">
+        <p class="section-kicker text-copper">Local mutation controls</p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button class="command-button-primary" id="rebuild-skill" data-skill="${name}" type="button">Rebuild</button>
+          <button class="command-button-danger" id="delete-skill" data-skill="${name}" type="button">Delete</button>
         </div>
         <p class="mt-4 text-sm leading-6 text-mist">
           Delete removes skills/${name} and all generated dist artifacts for this skill.
@@ -47,32 +51,78 @@ export function renderDetailPage(
     : "";
 
   return `
-    <article class="max-w-4xl pb-16">
-      <a class="inline-flex items-center font-mono text-sm text-mist transition hover:text-malachite focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" href="#/">Back to archive</a>
-      <p class="mt-8 font-mono text-xs font-semibold text-copper">${name}</p>
-      <h1 class="mt-4 max-w-3xl font-display text-5xl font-semibold leading-none text-porcelain sm:text-6xl">${title}</h1>
-      <p class="mt-6 max-w-2xl text-lg leading-8 text-mist">${description}</p>
-      <p class="mt-5 max-w-2xl text-sm leading-6 text-mist">${detailMessage}</p>
-      <section class="mt-8 grid grid-cols-1 gap-4 border-y border-brass/20 py-5 sm:grid-cols-2">
-        <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Version</strong> ${version}</p>
-        <p class="text-sm text-mist"><strong class="block font-mono text-xs text-porcelain">Artifact</strong> SKILL.md</p>
-        <div class="text-sm text-mist sm:col-span-2">
-          <strong class="block font-mono text-xs text-porcelain">Triggers</strong>
-          <ul class="mt-2 flex flex-wrap gap-2">${triggers}</ul>
+    <article class="pb-16" data-ui="skill-detail-command">
+      <nav class="flex flex-wrap items-center gap-2 font-mono text-sm text-mist" aria-label="Breadcrumb">
+        <a class="console-link min-h-0" href="#/">skills</a>
+        <span>/</span>
+        <a class="console-link min-h-0" href="${repositoryUrl}" target="_blank" rel="noreferrer">eraop</a>
+        <span>/</span>
+        <a class="console-link min-h-0" href="${repositoryUrl}" target="_blank" rel="noreferrer">skills</a>
+        <span>/</span>
+        <span class="text-porcelain">${name}</span>
+      </nav>
+      <div class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div class="min-w-0">
+          <header class="command-surface">
+            <p class="section-kicker">${name}</p>
+            <h1 class="mt-4 max-w-3xl font-display text-5xl font-semibold leading-none text-porcelain sm:text-6xl">${title}</h1>
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-mist">${description}</p>
+            <p class="mt-5 max-w-2xl text-sm leading-6 text-mist">${detailMessage}</p>
+          </header>
+          <section class="command-panel mt-6">
+            <p class="section-kicker">Installation</p>
+            <h2 class="mt-2 font-display text-3xl font-semibold leading-tight text-porcelain">Install vector</h2>
+            <code class="command-code mt-4"><span class="text-copper">$</span> ${installAllCommand}</code>
+          </section>
+          <section class="command-panel mt-6">
+            <p class="section-kicker">Summary</p>
+            <ul class="mt-4 grid gap-3 text-sm leading-6 text-mist">
+              <li class="summary-line">${bodyExcerpt}</li>
+              ${
+                triggerSummary.length > 0
+                  ? triggerSummary
+                      .map(
+                        (trigger) =>
+                          `<li class="summary-line">Activates when users need: ${escapeHtml(trigger)}</li>`,
+                      )
+                      .join("")
+                  : `<li class="summary-line">No trigger vectors are declared for this skill yet.</li>`
+              }
+            </ul>
+          </section>
+          ${actions}
+          <section class="skill-content">
+            <p class="section-kicker">SKILL.md</p>
+            ${renderMarkdown(skill.body)}
+          </section>
         </div>
-      </section>
-      <section class="relative mt-8 overflow-hidden rounded-lg border border-malachite/25 bg-onyx/80 p-5 shadow-2xl shadow-malachite/10">
-        <span class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-malachite to-transparent"></span>
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p class="font-mono text-xs font-semibold text-malachite">Install</p>
-            <h2 class="mt-2 font-display text-3xl font-semibold leading-tight text-porcelain">Install this skill</h2>
-          </div>
-          <code class="block break-all border border-brass/30 bg-black/35 px-3 py-2 font-mono text-sm text-porcelain"><span class="text-copper">&gt;</span> ${installAllCommand}</code>
-        </div>
-      </section>
-      ${actions}
-      <section class="skill-content">${renderMarkdown(skill.body)}</section>
+        <aside class="grid gap-4 lg:sticky lg:top-20">
+          <section class="command-panel">
+            <p class="section-kicker">Archive stats</p>
+            <div class="mt-4 grid gap-3">
+              <p class="metadata-cell"><strong>Version</strong> ${version}</p>
+              <p class="metadata-cell"><strong>Artifact</strong> SKILL.md</p>
+              <p class="metadata-cell"><strong>Triggers</strong> ${skill.triggers.length}</p>
+            </div>
+          </section>
+          <section class="command-panel">
+            <p class="section-kicker">Repository</p>
+            <a class="mt-3 inline-flex break-all text-sm text-malachite underline decoration-malachite/40 underline-offset-4 hover:text-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite" href="${repositoryUrl}" target="_blank" rel="noreferrer">eraop/skills</a>
+          </section>
+          <section class="command-panel">
+            <p class="section-kicker">Security checks</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="signal-chip">Schema Pass</span>
+              <span class="signal-chip">Markdown Sanitized</span>
+              <span class="muted-chip">Local writes gated</span>
+            </div>
+          </section>
+          <section class="command-panel">
+            <p class="section-kicker">Triggers</p>
+            <ul class="mt-3 flex flex-wrap gap-2">${triggers}</ul>
+          </section>
+        </aside>
+      </div>
     </article>
   `;
 }

@@ -3,7 +3,7 @@ import { renderArchiveShell } from "./components/archive-shell.js";
 import { supportsWorkbenchMode } from "./lib/mode.js";
 import type { SkillDraft } from "./lib/skill-schema.js";
 import { renderDetailPage } from "./pages/detail.js";
-import { renderHomePage } from "./pages/home.js";
+import { type HomeFilter, renderHomePage } from "./pages/home.js";
 import { renderNotFoundPage } from "./pages/not-found.js";
 import { parseRoute } from "./router.js";
 import type { PublishedSkill } from "./lib/types.js";
@@ -75,6 +75,20 @@ async function bootstrap() {
     let skillSource = "";
     let skillDraft: SkillDraft | null = null;
     let skillValidationMessage = "Paste a complete wrapped skill to validate it locally.";
+    let homeQuery = "";
+    let homeFilter: HomeFilter = "all";
+
+    function isHomeFilter(value: string): value is HomeFilter {
+      return value === "all" || value === "trending" || value === "hot";
+    }
+
+    function focusHomeSearch() {
+      const searchField = document.querySelector<HTMLInputElement>("#skill-search");
+      if (!searchField) return;
+
+      searchField.focus();
+      searchField.setSelectionRange(searchField.value.length, searchField.value.length);
+    }
 
     async function canReuseStoredHandle(handle: FileSystemDirectoryHandle) {
       if (!workbench) {
@@ -183,6 +197,8 @@ async function bootstrap() {
         appRoot.innerHTML = renderArchiveShell(
           renderHomePage(skills, {
             workbenchAvailable: workbench !== null,
+            query: homeQuery,
+            filter: homeFilter,
           }),
           sidebar,
         );
@@ -219,6 +235,25 @@ async function bootstrap() {
       appRoot.innerHTML = renderArchiveShell(renderNotFoundPage(), sidebar);
       syncSkillEditor();
     }
+
+    document.addEventListener("input", (event) => {
+      const target = event.target as HTMLInputElement | null;
+      if (!target || target.id !== "skill-search") return;
+
+      homeQuery = target.value;
+      render();
+      focusHomeSearch();
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement | null;
+      const filterButton = target?.closest<HTMLElement>("[data-home-filter]");
+      const nextFilter = filterButton?.dataset.homeFilter;
+      if (!nextFilter || !isHomeFilter(nextFilter)) return;
+
+      homeFilter = nextFilter;
+      render();
+    });
 
     if (workbench) {
       document.addEventListener("click", async (event) => {
@@ -390,8 +425,8 @@ async function bootstrap() {
     render();
   } catch {
     appRoot.innerHTML = renderArchiveShell(`
-      <section class="max-w-xl py-16">
-        <p class="font-mono text-xs font-semibold text-copper">Unavailable</p>
+      <section class="command-empty">
+        <p class="section-kicker">Archive offline</p>
         <h1 class="mt-4 font-display text-5xl leading-none text-porcelain sm:text-6xl">The archive could not be loaded.</h1>
         <p class="mt-6 text-lg leading-8 text-mist">Please refresh and try again in a moment.</p>
       </section>
