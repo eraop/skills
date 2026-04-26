@@ -1,10 +1,9 @@
 import type { PublishedSkill } from "../lib/types.js";
 import { renderSkillCard } from "../components/skill-card.js";
-import { renderSkillEditor } from "../components/skill-editor.js";
 
 export function renderHomePage(
   skills: PublishedSkill[],
-  options: { workbenchAvailable: boolean; editorOpen?: boolean } = {
+  options: { workbenchAvailable: boolean } = {
     workbenchAvailable: false,
   },
 ) {
@@ -28,7 +27,6 @@ export function renderHomePage(
         }
       </p>
     </section>
-    ${options.editorOpen ? renderSkillEditor() : ""}
     <section class="grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 xl:grid-cols-3">
       ${skills.map(renderSkillCard).join("")}
     </section>

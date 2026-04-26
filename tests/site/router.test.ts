@@ -17,6 +17,10 @@ describe("parseRoute", () => {
     });
   });
 
+  it("routes the local edit page", () => {
+    expect(parseRoute("#/edit")).toEqual({ kind: "edit" });
+  });
+
   it("routes unknown hashes to not-found", () => {
     expect(parseRoute("#/missing/route")).toEqual({ kind: "not-found" });
   });

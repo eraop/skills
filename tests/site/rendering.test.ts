@@ -133,4 +133,14 @@ describe("site rendering", () => {
       "&lt;script&gt;alert(&quot;saved&quot;)&lt;/script&gt;",
     );
   });
+
+  it("links local workbench creation to a dedicated edit page", () => {
+    const html = renderWorkbenchPanel({
+      enabled: true,
+      repoLabel: "skills",
+    });
+
+    expect(html).toContain('href="#/edit"');
+    expect(html).not.toContain('id="add-skill"');
+  });
 });
