@@ -9,6 +9,7 @@
     "build": "tsc -b tsconfig.build.json",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --pretty false",
+    "skills:build": "node --import tsx scripts/build-all-skills.ts",
     "site:data": "node --import tsx scripts/generate-site-data.ts",
     "site:dev": "npm run site:data && vite --config site/vite.config.ts",
     "site:build": "npm run site:data && vite build --config site/vite.config.ts",

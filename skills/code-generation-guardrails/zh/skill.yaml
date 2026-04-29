@@ -1,11 +1,23 @@
 name: code-generation-guardrails-zh
 title: 代码生成约束
 description: 在生成代码前约束简洁性、一致性和最小改动原则
-version: 0.1.0
-tags: []
+version: 1.0.0
+tags:
+  - 代码生成
+  - 维护
+  - 后端
+  - 前端
+  - 重构
+  - 修复bug
+  - 低风险
+  - 生产环境
 triggers:
-  - 编写新代码
-  - 修改已有代码
-  - 实现功能
-  - 修复 bug
-  - 重构任务
+  - 编写代码
+  - 生成代码
+  - 修复bug
+  - 修补代码
+  - 更新函数
+  - 修改现有代码
+  - 小改动
+  - 最小实现
+  - 避免重构

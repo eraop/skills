@@ -157,6 +157,9 @@ node packages/cli/dist/index.js list
 # 构建某个 skill 到 dist/
 node packages/cli/dist/index.js build code-generation-guardrails
 
+# 构建所有 skill 到 dist/
+npm run skills:build
+
 # 安装某个 skill
 curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope global
 
