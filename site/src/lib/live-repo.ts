@@ -11,10 +11,65 @@ async function readTextFile(
   return file.text()
 }
 
+async function fileExists(
+  directory: FileSystemDirectoryHandle,
+  name: string,
+) {
+  try {
+    await directory.getFileHandle(name)
+    return true
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      error.name === "NotFoundError"
+    ) {
+      return false
+    }
+
+    throw error
+  }
+}
+
 function isDirectoryHandle(
   handle: FileSystemHandle,
 ): handle is FileSystemDirectoryHandle {
   return handle.kind === "directory"
+}
+
+async function scanSkillDirectory(
+  skillRoot: FileSystemDirectoryHandle,
+): Promise<PublishedSkill[]> {
+  if (await fileExists(skillRoot, "skill.yaml")) {
+    const [documentSource, body] = await Promise.all([
+      readTextFile(skillRoot, "skill.yaml"),
+      readTextFile(skillRoot, "body.md"),
+    ])
+
+    return [parseArchiveSkill({ documentSource, body })]
+  }
+
+  const skills: PublishedSkill[] = []
+
+  for await (const entry of skillRoot.values()) {
+    if (!isDirectoryHandle(entry) || !(await fileExists(entry, "skill.yaml"))) {
+      continue
+    }
+
+    const [documentSource, body] = await Promise.all([
+      readTextFile(entry, "skill.yaml"),
+      readTextFile(entry, "body.md"),
+    ])
+
+    skills.push(parseArchiveSkill({
+      documentSource,
+      body,
+      artifactEntryFile: `${entry.name}/SKILL.md`,
+    }))
+  }
+
+  return skills
 }
 
 export async function scanRepoSkills(
@@ -32,12 +87,7 @@ export async function scanRepoSkills(
       continue
     }
 
-    const [documentSource, body] = await Promise.all([
-      readTextFile(entry, "skill.yaml"),
-      readTextFile(entry, "body.md"),
-    ])
-
-    skills.push(parseArchiveSkill({ documentSource, body }))
+    skills.push(...await scanSkillDirectory(entry))
   }
 
   return skills.sort((left, right) => left.name.localeCompare(right.name))

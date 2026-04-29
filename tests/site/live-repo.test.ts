@@ -113,4 +113,45 @@ triggers:
     expect(initial[0]?.description).toBe("Initial description.");
     expect(rescanned[0]?.description).toBe("Updated description.");
   });
+
+  it("scans localized variants from a shared skill folder", async () => {
+    const root = new MemoryDirectoryHandle("repo");
+    const skillsRoot = await root.getDirectoryHandle("skills", { create: true });
+    await root.getFileHandle("package.json", { create: true });
+    const skillRoot = await skillsRoot.getDirectoryHandle("code-generation-guardrails", {
+      create: true,
+    });
+    const englishRoot = await skillRoot.getDirectoryHandle("en", { create: true });
+    const chineseRoot = await skillRoot.getDirectoryHandle("zh", { create: true });
+
+    await (await (await englishRoot.getFileHandle("skill.yaml", { create: true })).createWritable()).write(`name: code-generation-guardrails
+title: Code Generation Guardrails
+description: Keep code small.
+version: 0.1.0
+tags: []
+triggers:
+  - write code
+`);
+    await (await (await englishRoot.getFileHandle("body.md", { create: true })).createWritable()).write("Keep code small.");
+    await (await (await chineseRoot.getFileHandle("skill.yaml", { create: true })).createWritable()).write(`name: code-generation-guardrails-zh
+title: 代码生成约束
+description: 保持代码简单。
+version: 0.1.0
+tags: []
+triggers:
+  - 编写代码
+`);
+    await (await (await chineseRoot.getFileHandle("body.md", { create: true })).createWritable()).write("保持代码小而清晰。");
+
+    const skills = await scanRepoSkills(root as never);
+
+    expect(skills.map((skill) => skill.name)).toEqual([
+      "code-generation-guardrails",
+      "code-generation-guardrails-zh",
+    ]);
+    expect(skills.map((skill) => skill.artifacts[0]?.entryFile)).toEqual([
+      "en/SKILL.md",
+      "zh/SKILL.md",
+    ]);
+  });
 });

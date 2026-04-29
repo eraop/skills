@@ -5,6 +5,7 @@ import type { PublishedSkill } from "./types.js";
 export function parseArchiveSkill(args: {
   documentSource: string;
   body: string;
+  artifactEntryFile?: string;
 }): PublishedSkill {
   const document = parseSkillDocument(YAML.parse(args.documentSource));
   const firstParagraph =
@@ -21,7 +22,7 @@ export function parseArchiveSkill(args: {
     bodyExcerpt: firstParagraph,
     artifacts: [
       {
-        entryFile: "SKILL.md",
+        entryFile: args.artifactEntryFile ?? "SKILL.md",
       },
     ],
   };

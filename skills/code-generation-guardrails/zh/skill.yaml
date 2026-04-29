@@ -1,5 +1,5 @@
-name: code-generation-guardrails
-title: Code Generation Guardrails
+name: code-generation-guardrails-zh
+title: 代码生成约束
 description: 在生成代码前约束简洁性、一致性和最小改动原则
 version: 0.1.0
 tags: []

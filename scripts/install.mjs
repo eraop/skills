@@ -130,6 +130,68 @@ async function fetchText(url) {
   return response.text();
 }
 
+async function fetchOptionalText(url) {
+  const response = await fetch(url);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Could not fetch ${url}: ${response.status} ${response.statusText}`);
+  }
+
+  return response.text();
+}
+
+async function fetchGeneratedSkill(baseUrl, skillName) {
+  const source = await fetchText(`${baseUrl}/site/public/data/skills.json`);
+  const records = JSON.parse(source);
+
+  if (!Array.isArray(records)) {
+    throw new Error("site/public/data/skills.json must contain an array.");
+  }
+
+  const record = records.find((item) => item?.name === skillName);
+  if (!record) {
+    throw new Error(`Skill "${skillName}" was not found in site data.`);
+  }
+
+  if (
+    typeof record.name !== "string" ||
+    typeof record.title !== "string" ||
+    typeof record.description !== "string" ||
+    !Array.isArray(record.triggers) ||
+    typeof record.body !== "string"
+  ) {
+    throw new Error(`Skill "${skillName}" has invalid site data.`);
+  }
+
+  return {
+    document: {
+      name: record.name,
+      title: record.title,
+      description: record.description,
+      triggers: record.triggers.filter((trigger) => typeof trigger === "string"),
+    },
+    body: record.body,
+  };
+}
+
+async function fetchSourceSkill(baseUrl, skillName) {
+  const skillBaseUrl = `${baseUrl}/skills/${encodeURIComponent(skillName)}`;
+  const documentSource = await fetchOptionalText(`${skillBaseUrl}/skill.yaml`);
+
+  if (documentSource === null) {
+    return null;
+  }
+
+  return {
+    document: parseSkillDocument(documentSource),
+    body: await fetchText(`${skillBaseUrl}/body.md`),
+  };
+}
+
 export async function installRemoteSkill(args) {
   if (!args.skillName) {
     throw new Error("Skill name is required.");
@@ -140,15 +202,11 @@ export async function installRemoteSkill(args) {
   }
 
   const baseUrl = args.baseUrl.replace(/\/$/, "");
-  const skillBaseUrl = `${baseUrl}/skills/${encodeURIComponent(args.skillName)}`;
-  const [documentSource, body] = await Promise.all([
-    fetchText(`${skillBaseUrl}/skill.yaml`),
-    fetchText(`${skillBaseUrl}/body.md`),
-  ]);
-  const document = parseSkillDocument(documentSource);
+  const sourceSkill = await fetchSourceSkill(baseUrl, args.skillName);
+  const skill = sourceSkill ?? await fetchGeneratedSkill(baseUrl, args.skillName);
   const installRoot = resolveInstallRoot(args.scope, args);
-  const destination = path.join(installRoot, document.name);
-  const contents = buildSkillMarkdown(document, body);
+  const destination = path.join(installRoot, skill.document.name);
+  const contents = buildSkillMarkdown(skill.document, skill.body);
 
   await mkdir(installRoot, { recursive: true });
   await rm(destination, { recursive: true, force: true });

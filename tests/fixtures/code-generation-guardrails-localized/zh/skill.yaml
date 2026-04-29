@@ -1,0 +1,7 @@
+name: code-generation-guardrails-zh
+title: 代码生成约束
+description: 保持生成代码简单。
+version: 0.1.0
+tags: []
+triggers:
+  - 编写代码

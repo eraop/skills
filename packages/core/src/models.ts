@@ -13,3 +13,8 @@ export interface NeutralSkill {
   body: string;
   rootDir: string;
 }
+
+export interface SkillSource extends NeutralSkill {
+  artifactPathSegments: string[];
+  variantName?: string;
+}

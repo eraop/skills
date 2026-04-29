@@ -125,4 +125,29 @@ describe("installSkill", () => {
       path.join(projectRoot, ".agents", "skills", "plain-skill")
     );
   });
+
+  it("installs localized variants from one shared skill folder", async () => {
+    const results = await installSkill({
+      skillRoot: "tests/fixtures/code-generation-guardrails-localized",
+      outputRoot,
+      scope: "project",
+      projectRoot
+    });
+
+    expect(results).toEqual([
+      {
+        destination: path.join(projectRoot, ".agents", "skills", "code-generation-guardrails")
+      },
+      {
+        destination: path.join(projectRoot, ".agents", "skills", "code-generation-guardrails-zh")
+      }
+    ]);
+
+    await expect(
+      access(path.join(results[0]!.destination, "SKILL.md"))
+    ).resolves.toBeUndefined();
+    await expect(
+      access(path.join(results[1]!.destination, "SKILL.md"))
+    ).resolves.toBeUndefined();
+  });
 });

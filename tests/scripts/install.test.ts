@@ -101,6 +101,54 @@ triggers:
     await rm(root, { recursive: true, force: true });
   });
 
+  it("installs a generated skill from site data", async () => {
+    const root = path.join(os.tmpdir(), "skills-install-site-data");
+    const home = path.join(root, "home");
+    const cwd = path.join(root, "project");
+    await rm(root, { recursive: true, force: true });
+
+    vi.stubGlobal("fetch", async (url: string) => {
+      if (url.endsWith("/site/public/data/skills.json")) {
+        return {
+          ok: true,
+          text: async () => JSON.stringify([
+            {
+              name: "code-generation-guardrails-zh",
+              title: "代码生成约束",
+              description: "保持生成代码简单。",
+              triggers: ["编写代码"],
+              body: "# 代码生成约束\n\n保持代码小而清晰。"
+            }
+          ]),
+        };
+      }
+
+      return {
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        text: async () => "",
+      };
+    });
+
+    const installed = await installer.installRemoteSkill({
+      skillName: "code-generation-guardrails-zh",
+      scope: "project",
+      baseUrl: "https://example.test",
+      home,
+      cwd,
+    });
+
+    const destination = path.join(cwd, ".agents", "skills", "code-generation-guardrails-zh");
+    expect(installed).toEqual([{ destination }]);
+
+    const skillFile = await readFile(path.join(destination, "SKILL.md"), "utf8");
+    expect(skillFile).toContain("---\nname: code-generation-guardrails-zh");
+    expect(skillFile).toContain("保持代码小而清晰。");
+
+    await rm(root, { recursive: true, force: true });
+  });
+
   it("runs when piped to node over stdin", () => {
     const output = execFileSync("node", ["-", "--help"], {
       input: readFileSync("scripts/install.mjs"),

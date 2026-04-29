@@ -2,6 +2,27 @@
   {
     "name": "code-generation-guardrails",
     "title": "Code Generation Guardrails",
+    "description": "Keep generated code simple, consistent, narrowly scoped, and aligned with the existing project before writing or changing code.",
+    "version": "0.1.0",
+    "tags": [],
+    "triggers": [
+      "writing new code",
+      "modifying existing code",
+      "implementing features",
+      "fixing bugs",
+      "refactoring code"
+    ],
+    "body": "# Code Generation Guardrails\n\nGenerate simple, maintainable code that fits the project style.\n\n## When to Use\n\n- Writing new code\n- Modifying existing code\n- Implementing features\n- Fixing bugs\n- Refactoring code\n\n## Core Principles\n\n- Follow the existing project style before abstract best practices.\n- Prefer clear expression over compact cleverness.\n- Choose the smallest correct implementation.\n- Do not change behavior unless the task requires it.\n- Do not expand the task scope.\n\n## Before Coding\n\nClarify:\n\n- Goal: what to do and what not to do.\n- Constraints: project conventions, APIs, and boundaries.\n- Scope: the smallest change that solves the task.\n\nIf details are unclear, choose the simplest reasonable approach.\n\n## Generation Rules\n\n### Consistency\n- Follow existing naming, structure, and patterns.\n- Do not introduce a new paradigm casually.\n\n### Simplicity\n- Avoid deep nesting.\n- Avoid showy or overly clever code.\n- Keep control flow direct.\n- Use intermediate variables when they improve readability.\n\n### Abstraction Control\n- Do not abstract prematurely.\n- Avoid one-off helpers.\n- Do not generalize for imagined future needs.\n\n### Change Scope\n- Touch as few files and lines as practical.\n- Do not modify unrelated code.\n- Do not mix unrelated refactoring into feature work.\n\n### Types and Interfaces\n- Keep interfaces clear and stable.\n- Use explicit types where they clarify intent.\n- Avoid vague types.\n\n### Testability\n- Keep logic verifiable.\n- Isolate side effects where practical.\n\n### Safety and Quality\nCheck for:\n- Runtime issues such as null values and out-of-bounds access.\n- Security risks such as injection and XSS.\n- Performance issues such as repeated work and N+1 queries.\n- Interface compatibility.\n\n## Decision Rules\n\nWhen several options are viable:\n\n1. Prefer the option that best matches the existing code style.\n2. Choose the simpler option.\n3. Choose the clearer structure.\n4. Choose the easier-to-test approach.\n\n## Pre-Generation Check\n\n- Is this the smallest implementation?\n- Does it introduce unnecessary abstraction?\n- Does it match the project style?\n- Is it easy to understand?\n\n## Post-Generation Check\n\n- The behavior is correct and has no unintended changes.\n- Complexity is reasonable.\n- Names are clear.\n- No obvious risks remain.\n\n## Anti-Patterns\n\n- Overengineering\n- Designing for speculative future expansion\n- One-off abstractions\n- Hidden side effects\n- Complex one-liners\n- Nested ternaries\n- Unrelated refactoring\n",
+    "bodyExcerpt": "Generate simple, maintainable code that fits the project style.",
+    "artifacts": [
+      {
+        "entryFile": "en/SKILL.md"
+      }
+    ]
+  },
+  {
+    "name": "code-generation-guardrails-zh",
+    "title": "代码生成约束",
     "description": "在生成代码前约束简洁性、一致性和最小改动原则",
     "version": "0.1.0",
     "tags": [],
@@ -12,11 +33,11 @@
       "修复 bug",
       "重构任务"
     ],
-    "body": "# 代码生成约束\n\n生成简单、可维护、符合项目风格的代码。\n\n## 适用场景\n\n- 代码生成约束\n- 适用场景\n- 编写新代码\n- 修改已有代码\n- 实现功能\n- 修复 bug\n- 重构任务\n\n## 核心原则\n\n- 优先遵循项目已有风格，而不是抽象最佳实践\n- 优先清晰表达，而不是紧凑写法\n- 选择“最小正确实现”\n- 不改变非必要行为\n- 不扩大任务范围\n\n## 编码前\n\n明确：\n\n- 目标：要做什么、不做什么\n- 约束：项目规范、API、边界\n- 范围：最小改动方案\n\n如果不明确，选择最简单合理方案。\n\n## 生成规则\n\n### 一致性\n- 遵循已有命名、结构、模式\n- 不随意引入新范式\n\n### 简洁性\n- 避免深层嵌套\n- 避免炫技写法\n- 保持流程直观\n- 必要时使用中间变量提升可读性\n\n### 抽象控制\n- 不做过早抽象\n- 避免一次性 helper\n- 不为未来做泛化设计\n\n### 改动范围\n- 尽量少文件、少改动\n- 不修改无关代码\n- 不把重构混入功能实现\n\n### 类型与接口\n- 接口清晰稳定\n- 合理使用显式类型\n- 避免模糊类型\n\n### 可测试性\n- 保持逻辑可验证\n- 尽量隔离副作用\n\n### 安全与质量\n检查：\n- 空值/越界等运行时问题\n- 安全风险（注入/XSS等）\n- 性能问题（重复计算/N+1）\n- 接口兼容性\n\n## 决策规则\n\n多个方案时：\n\n1. 优先匹配现有代码风格\n2. 选择更简单的方案\n3. 选择更清晰的结构\n4. 选择更易测试的方案\n\n## 生成前检查\n\n- 是否最小实现？\n- 是否引入不必要抽象？\n- 是否符合项目风格？\n- 是否容易理解？\n\n## 生成后检查\n\n- 功能正确且无额外行为变化\n- 复杂度合理\n- 命名清晰\n- 无明显风险\n\n## 反模式\n\n- 过度设计\n- 预期未来扩展\n- 一次性抽象\n- 隐式副作用\n- 复杂一行代码\n- 嵌套三元表达式\n- 无关重构",
+    "body": "# 代码生成约束\n\n生成简单、可维护、符合项目风格的代码。\n\n## 适用场景\n\n- 编写新代码\n- 修改已有代码\n- 实现功能\n- 修复 bug\n- 重构任务\n\n## 核心原则\n\n- 优先遵循项目已有风格，而不是抽象最佳实践\n- 优先清晰表达，而不是紧凑写法\n- 选择“最小正确实现”\n- 不改变非必要行为\n- 不扩大任务范围\n\n## 编码前\n\n明确：\n\n- 目标：要做什么、不做什么\n- 约束：项目规范、API、边界\n- 范围：最小改动方案\n\n如果不明确，选择最简单合理方案。\n\n## 生成规则\n\n### 一致性\n- 遵循已有命名、结构、模式\n- 不随意引入新范式\n\n### 简洁性\n- 避免深层嵌套\n- 避免炫技写法\n- 保持流程直观\n- 必要时使用中间变量提升可读性\n\n### 抽象控制\n- 不做过早抽象\n- 避免一次性 helper\n- 不为未来做泛化设计\n\n### 改动范围\n- 尽量少文件、少改动\n- 不修改无关代码\n- 不把重构混入功能实现\n\n### 类型与接口\n- 接口清晰稳定\n- 合理使用显式类型\n- 避免模糊类型\n\n### 可测试性\n- 保持逻辑可验证\n- 尽量隔离副作用\n\n### 安全与质量\n检查：\n- 空值/越界等运行时问题\n- 安全风险（注入/XSS等）\n- 性能问题（重复计算/N+1）\n- 接口兼容性\n\n## 决策规则\n\n多个方案时：\n\n1. 优先匹配现有代码风格\n2. 选择更简单的方案\n3. 选择更清晰的结构\n4. 选择更易测试的方案\n\n## 生成前检查\n\n- 是否最小实现？\n- 是否引入不必要抽象？\n- 是否符合项目风格？\n- 是否容易理解？\n\n## 生成后检查\n\n- 功能正确且无额外行为变化\n- 复杂度合理\n- 命名清晰\n- 无明显风险\n\n## 反模式\n\n- 过度设计\n- 预期未来扩展\n- 一次性抽象\n- 隐式副作用\n- 复杂一行代码\n- 嵌套三元表达式\n- 无关重构\n",
     "bodyExcerpt": "生成简单、可维护、符合项目风格的代码。",
     "artifacts": [
       {
-        "entryFile": "SKILL.md"
+        "entryFile": "zh/SKILL.md"
       }
     ]
   }

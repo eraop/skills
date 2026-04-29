@@ -19,6 +19,7 @@ curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.m
 当前已有 skill：
 
 - `code-generation-guardrails`
+- `code-generation-guardrails-zh`
 
 ## 仓库结构
 
@@ -26,16 +27,20 @@ curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.m
 skills/
   skills/
     <skill-name>/
-      skill.yaml       # 中立元数据，人工维护
-      body.md          # 中立正文，人工维护
+      en/
+        skill.yaml     # 英文元数据，人工维护
+        body.md        # 英文正文，人工维护
+      zh/
+        skill.yaml     # 中文元数据，人工维护
+        body.md        # 中文正文，人工维护
   dist/
-    <skill-name>/SKILL.md
+    <skill-name>/<locale>/SKILL.md
   packages/
     cli/
     core/
 ```
 
-你平时主要改 `skills/<skill-name>/skill.yaml` 和 `skills/<skill-name>/body.md`。
+你平时主要改 `skills/<skill-name>/<locale>/skill.yaml` 和 `skills/<skill-name>/<locale>/body.md`。
 
 `dist/` 是生成目录。如果你没看到生成的 `SKILL.md`，先运行：
 
@@ -47,16 +52,17 @@ node packages/cli/dist/index.js build code-generation-guardrails
 然后查看：
 
 ```bash
-find dist -maxdepth 3 -type f | sort
+find dist -maxdepth 4 -type f | sort
 ```
 
-注意：当前只生成一份 `SKILL.md`，并共用同一份模板：
+注意：每个语言变体都会生成一份 `SKILL.md`，并共用同一份模板：
 frontmatter 包含 `name`、`description`、`triggers`；
 正文来自 `body.md`，不会根据 `triggers` 自动补充段落；需要“适用场景”时请直接写进 `body.md`。
 
 | 生成入口文件 | 示例路径 |
 | --- | --- |
-| `SKILL.md` | `dist/code-generation-guardrails/SKILL.md` |
+| `SKILL.md` | `dist/code-generation-guardrails/en/SKILL.md` |
+| `SKILL.md` | `dist/code-generation-guardrails/zh/SKILL.md` |
 
 ## 安装到 Agent
 
@@ -109,6 +115,8 @@ skills/<skill-name>/skill.yaml
 skills/<skill-name>/body.md
 ```
 
+如果这个 skill 需要多语言版本，请把生成的 `skill.yaml` 和 `body.md` 移到对应语言目录，例如 `skills/<skill-name>/en/`。
+
 `skill.yaml` 的基本格式：
 
 ```yaml
@@ -158,10 +166,10 @@ npm run site:dev
 
 ## 工作流
 
-1. 在 `skills/<skill-name>/skill.yaml` 里维护名称、描述和触发条件。
-2. 在 `skills/<skill-name>/body.md` 里维护 skill 正文。
+1. 在 `skills/<skill-name>/<locale>/skill.yaml` 里维护名称、描述和触发条件。
+2. 在 `skills/<skill-name>/<locale>/body.md` 里维护 skill 正文。
 3. 运行 `node packages/cli/dist/index.js build <skill-name>` 生成通用 `SKILL.md`。
-4. 到 `dist/<skill-name>/` 查看 agent 实际会读取的文件。
+4. 到 `dist/<skill-name>/<locale>/` 查看 agent 实际会读取的文件。
 5. 运行 `curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - <skill-name>` 安装。
 
 ## 排查
