@@ -1,6 +1,7 @@
 import type { PublishedSkill } from "../lib/types.js";
 import { renderSkillCard } from "../components/skill-card.js";
 import { escapeHtml } from "../lib/html.js";
+import { renderCopyCommandRow } from "../components/copy-command-button.js";
 
 export type HomeFilter = "all" | "trending" | "hot";
 
@@ -104,8 +105,8 @@ export function renderHomePage(
   const modeDescription = options.workbenchAvailable
     ? "Browse the published archive, then connect a local repository to enter live workbench mode."
     : "Browse the published archive in read-only mode.";
-  const sampleSkillName = skills[0]?.name ?? "<skill-name>";
-  const quickInstallCommand = `curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - ${sampleSkillName}`;
+  const quickInstallCommand =
+    "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - <skill-name>";
 
   return `
     <section class="command-surface" data-ui="command-deck-home">
@@ -122,7 +123,7 @@ export function renderHomePage(
       <div class="mt-7 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
         <div class="rounded-lg border border-malachite/20 bg-black/30 p-4">
           <p class="section-kicker">Try it now</p>
-          <code class="command-code mt-3"><span class="text-copper">$</span> ${escapeHtml(quickInstallCommand)}</code>
+          <div class="mt-3">${renderCopyCommandRow(quickInstallCommand)}</div>
         </div>
         <div class="rounded-lg border border-white/10 bg-white/[0.035] p-4">
           <p class="section-kicker">Available for these agents</p>

@@ -7,6 +7,7 @@ import { type HomeFilter, renderHomePage } from "./pages/home.js";
 import { renderNotFoundPage } from "./pages/not-found.js";
 import { parseRoute } from "./router.js";
 import type { PublishedSkill } from "./lib/types.js";
+import { handleCopyCommandClick } from "./lib/copy-command.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 if (!root) throw new Error("Missing #app root");
@@ -247,6 +248,7 @@ async function bootstrap() {
 
     document.addEventListener("click", (event) => {
       const target = event.target as HTMLElement | null;
+      void handleCopyCommandClick(event);
       const filterButton = target?.closest<HTMLElement>("[data-home-filter]");
       const nextFilter = filterButton?.dataset.homeFilter;
       if (!nextFilter || !isHomeFilter(nextFilter)) return;

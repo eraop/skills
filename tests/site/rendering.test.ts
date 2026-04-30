@@ -116,15 +116,20 @@ describe("site rendering", () => {
     expect(readOnlyHtml).not.toContain('id="delete-skill"');
   });
 
-  it("renders one install command on detail pages", () => {
+  it("renders global and project install commands on detail pages", () => {
     const html = renderDetailPage(makeSkill());
 
     expect(html).toContain("Install");
     expect(html).not.toContain("npm exec -- skills");
     expect(html).not.toContain("node packages/cli/dist/index.js install");
     expect(html).toContain(
-      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails",
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope global",
     );
+    expect(html).toContain(
+      "curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope project",
+    );
+    expect(html).toContain('data-copy-command="curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope global"');
+    expect(html).toContain('data-copy-command="curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope project"');
     expect(html).not.toContain("--target");
     expect(html).not.toContain("--platform");
   });
@@ -188,6 +193,9 @@ describe("site rendering", () => {
     ]);
 
     expect(html).toContain("Try it now");
+    expect(html).toContain("node - &lt;skill-name&gt;");
+    expect(html).toContain('data-copy-command="curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - &lt;skill-name&gt;"');
+    expect(html).not.toContain("node - code-generation-guardrails");
     expect(html).toContain("Available for these agents");
     expect(html).toContain('id="skill-search"');
     expect(html).toContain('data-home-filter="all"');

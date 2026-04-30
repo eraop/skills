@@ -1,4 +1,5 @@
 import type { PublishedSkill } from "../lib/types.js";
+import { renderCopyCommandRow } from "../components/copy-command-button.js";
 import { escapeHtml } from "../lib/html.js";
 import { renderMarkdown } from "../lib/markdown.js";
 
@@ -13,7 +14,8 @@ export function renderDetailPage(
     repoConnected: false,
   },
 ) {
-  const name = escapeHtml(skill.name);
+  const rawName = skill.name;
+  const name = escapeHtml(rawName);
   const title = escapeHtml(skill.title);
   const description = escapeHtml(skill.description);
   const version = escapeHtml(skill.version);
@@ -28,7 +30,8 @@ export function renderDetailPage(
           )
           .join("")
       : `<li class="font-mono text-xs text-mist">-</li>`;
-  const installAllCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${name}`;
+  const globalInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${rawName} --scope global`;
+  const projectInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${rawName} --scope project`;
   const showWorkbenchActions = options.repoConnected === true;
   const detailMessage = showWorkbenchActions
     ? "This local view can rebuild or delete the connected skill."
@@ -72,7 +75,16 @@ export function renderDetailPage(
           <section class="command-panel mt-6">
             <p class="section-kicker">Installation</p>
             <h2 class="mt-2 font-display text-3xl font-semibold leading-tight text-porcelain">Install vector</h2>
-            <code class="command-code mt-4"><span class="text-copper">$</span> ${installAllCommand}</code>
+            <div class="mt-4 grid gap-3">
+              <div>
+                <p class="muted-chip inline-flex">Global</p>
+                <div class="mt-2">${renderCopyCommandRow(globalInstallCommand)}</div>
+              </div>
+              <div>
+                <p class="muted-chip inline-flex">Project</p>
+                <div class="mt-2">${renderCopyCommandRow(projectInstallCommand)}</div>
+              </div>
+            </div>
           </section>
           <section class="command-panel mt-6">
             <p class="section-kicker">Summary</p>

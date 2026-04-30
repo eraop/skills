@@ -337,6 +337,44 @@ button:disabled {
     background: rgba(2, 4, 10, 0.52);
   }
 
+  .command-copy-row {
+    @apply grid grid-cols-[minmax(0,1fr)_2.75rem] items-stretch overflow-hidden rounded-md border;
+    border-color: rgba(159, 178, 199, 0.2);
+    background: rgba(2, 4, 10, 0.52);
+  }
+
+  .command-copy-row .command-code {
+    @apply min-w-0 rounded-none border-0 bg-transparent;
+  }
+
+  .command-copy-button {
+    @apply inline-flex min-h-10 w-11 items-center justify-center border-l text-malachite transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+    border-color: rgba(159, 178, 199, 0.2);
+    background: rgba(124, 248, 210, 0.08);
+  }
+
+  .command-copy-button:hover {
+    background: rgba(124, 248, 210, 0.14);
+  }
+
+  .command-copy-icon {
+    @apply h-4 w-4;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+  }
+
+  .check-icon,
+  .command-copy-button[data-copy-state="copied"] .copy-icon {
+    @apply hidden;
+  }
+
+  .command-copy-button[data-copy-state="copied"] .check-icon {
+    @apply block;
+  }
+
   .summary-line {
     @apply rounded-lg border px-4 py-3;
     border-color: rgba(159, 178, 199, 0.14);
