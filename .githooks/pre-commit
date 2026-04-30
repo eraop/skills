@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+npm run skills:build
+git add dist

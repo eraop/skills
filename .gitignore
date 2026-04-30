@@ -1,8 +1,8 @@
 .worktrees/
 node_modules/
 .tmp/
-dist/
 dist-ts/
+packages/*/dist/
 coverage/
 site-dist/
 *.tsbuildinfo

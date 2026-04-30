@@ -10,7 +10,7 @@ const DEFAULT_BASE_URL =
 function usage() {
   return [
     "Usage:",
-    "  node scripts/install.mjs <skill-name> [--scope global|project]",
+    "  node scripts/install.mjs <skill-name> [--scope global|project] [--lang en|zh]",
     "",
     "Remote one-line usage:",
     `  curl -fsSL ${DEFAULT_BASE_URL}/scripts/install.mjs | node - <skill-name>`,
@@ -88,6 +88,7 @@ function parseArgs(argv) {
   const args = {
     skillName: undefined,
     scope: "global",
+    lang: "en",
     baseUrl: process.env.SKILLS_BASE_URL ?? DEFAULT_BASE_URL,
   };
 
@@ -96,6 +97,11 @@ function parseArgs(argv) {
 
     if (value === "--scope") {
       args.scope = argv[++index];
+      continue;
+    }
+
+    if (value === "--lang") {
+      args.lang = argv[++index];
       continue;
     }
 
@@ -144,7 +150,7 @@ async function fetchOptionalText(url) {
   return response.text();
 }
 
-async function fetchGeneratedSkill(baseUrl, skillName) {
+async function fetchGeneratedSkill(baseUrl, skillName, lang = "en") {
   const source = await fetchText(`${baseUrl}/site/public/data/skills.json`);
   const records = JSON.parse(source);
 
@@ -157,25 +163,37 @@ async function fetchGeneratedSkill(baseUrl, skillName) {
     throw new Error(`Skill "${skillName}" was not found in site data.`);
   }
 
+  const selectedRecord =
+    Array.isArray(record.variants)
+      ? record.variants.find((variant) => variant?.language === lang) ??
+        record.variants.find((variant) => variant?.language === "en") ??
+        record
+      : record;
+
   if (
-    typeof record.name !== "string" ||
-    typeof record.title !== "string" ||
-    typeof record.description !== "string" ||
-    !Array.isArray(record.triggers) ||
-    typeof record.body !== "string"
+    typeof selectedRecord.name !== "string" ||
+    typeof selectedRecord.title !== "string" ||
+    typeof selectedRecord.description !== "string" ||
+    !Array.isArray(selectedRecord.triggers) ||
+    typeof selectedRecord.body !== "string"
   ) {
     throw new Error(`Skill "${skillName}" has invalid site data.`);
   }
 
   return {
     document: {
-      name: record.name,
-      title: record.title,
-      description: record.description,
-      triggers: record.triggers.filter((trigger) => typeof trigger === "string"),
+      name: selectedRecord.name,
+      title: selectedRecord.title,
+      description: selectedRecord.description,
+      triggers: selectedRecord.triggers.filter((trigger) => typeof trigger === "string"),
     },
-    body: record.body,
+    body: selectedRecord.body,
   };
+}
+
+async function fetchPrebuiltSkill(baseUrl, skillName, lang) {
+  const prebuiltUrl = `${baseUrl}/dist/${encodeURIComponent(skillName)}/${encodeURIComponent(lang)}/SKILL.md`;
+  return fetchOptionalText(prebuiltUrl);
 }
 
 async function fetchSourceSkill(baseUrl, skillName) {
@@ -201,9 +219,24 @@ export async function installRemoteSkill(args) {
     throw new Error('--scope must be "global" or "project".');
   }
 
+  const lang = args.lang ?? "en";
   const baseUrl = args.baseUrl.replace(/\/$/, "");
+  const prebuilt = await fetchPrebuiltSkill(baseUrl, args.skillName, lang);
+  if (prebuilt !== null) {
+    const document = parseSkillDocument(prebuilt);
+    const installRoot = resolveInstallRoot(args.scope, args);
+    const destination = path.join(installRoot, document.name);
+
+    await mkdir(installRoot, { recursive: true });
+    await rm(destination, { recursive: true, force: true });
+    await mkdir(destination, { recursive: true });
+    await writeFile(path.join(destination, "SKILL.md"), prebuilt, "utf8");
+
+    return [{ destination }];
+  }
+
   const sourceSkill = await fetchSourceSkill(baseUrl, args.skillName);
-  const skill = sourceSkill ?? await fetchGeneratedSkill(baseUrl, args.skillName);
+  const skill = sourceSkill ?? await fetchGeneratedSkill(baseUrl, args.skillName, lang);
   const installRoot = resolveInstallRoot(args.scope, args);
   const destination = path.join(installRoot, skill.document.name);
   const contents = buildSkillMarkdown(skill.document, skill.body);
