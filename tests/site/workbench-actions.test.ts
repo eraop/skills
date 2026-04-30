@@ -299,6 +299,8 @@ describe("rebuildSkill", () => {
       body: "This rebuilt skill only targets Codex.",
       bodyExcerpt: "This rebuilt skill only targets Codex.",
       artifacts: [{ entryFile: "SKILL.md" }],
+      language: "default",
+      variants: [],
     });
 
     const skillsRoot = await root.getDirectoryHandle("skills");

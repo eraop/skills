@@ -1,10 +1,11 @@
 import "./styles.css";
 import { renderArchiveShell } from "./components/archive-shell.js";
 import { renderDetailPage } from "./pages/detail.js";
-import { type HomeFilter, renderHomePage } from "./pages/home.js";
+import { renderHomePage } from "./pages/home.js";
 import { renderNotFoundPage } from "./pages/not-found.js";
 import type { PublishedSkill } from "./lib/types.js";
 import { handleCopyCommandClick } from "./lib/copy-command.js";
+import { parseRoute } from "./router.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 if (!root) throw new Error("Missing #app root");
@@ -19,11 +20,7 @@ async function bootstrap() {
 
     const skills = (await response.json()) as PublishedSkill[];
     let homeQuery = "";
-    let homeFilter: HomeFilter = "all";
-
-    function isHomeFilter(value: string): value is HomeFilter {
-      return value === "all" || value === "trending" || value === "hot";
-    }
+    let lastRouteKey: string | null = null;
 
     function focusHomeSearch() {
       const searchField = document.querySelector<HTMLInputElement>("#skill-search");
@@ -33,36 +30,53 @@ async function bootstrap() {
       searchField.setSelectionRange(searchField.value.length, searchField.value.length);
     }
 
-    function render() {
-      const hash = window.location.hash;
+    function routeKey(route: ReturnType<typeof parseRoute>) {
+      if (route.kind === "detail") {
+        return `${route.kind}:${route.skillName}:${route.language ?? ""}`;
+      }
 
-      if (hash === "" || hash === "#" || hash === "#/") {
+      return route.kind;
+    }
+
+    function syncRouteScroll(route: ReturnType<typeof parseRoute>) {
+      const nextRouteKey = routeKey(route);
+      if (nextRouteKey === lastRouteKey) return;
+
+      lastRouteKey = nextRouteKey;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+
+    function render() {
+      const route = parseRoute(window.location.hash);
+
+      if (route.kind === "home") {
         appRoot.innerHTML = renderArchiveShell(
           renderHomePage(skills, {
             workbenchAvailable: false,
             query: homeQuery,
-            filter: homeFilter,
           }),
         );
+        syncRouteScroll(route);
         return;
       }
 
-      const detailMatch = hash.match(/^#\/skill\/([a-z0-9-]+)$/);
-      const skillName = detailMatch?.[1];
-      if (skillName) {
-        const skill = skills.find((entry) => entry.name === skillName);
+      if (route.kind === "detail") {
+        const skill = skills.find((entry) => entry.name === route.skillName);
         appRoot.innerHTML = renderArchiveShell(
           skill
             ? renderDetailPage(skill, {
                 workbenchAvailable: false,
                 repoConnected: false,
+                selectedLanguage: route.language,
               })
             : renderNotFoundPage(),
         );
+        syncRouteScroll(route);
         return;
       }
 
       appRoot.innerHTML = renderArchiveShell(renderNotFoundPage());
+      syncRouteScroll(route);
     }
 
     window.addEventListener("hashchange", render);
@@ -75,14 +89,7 @@ async function bootstrap() {
       focusHomeSearch();
     });
     document.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement | null;
       void handleCopyCommandClick(event);
-      const filterButton = target?.closest<HTMLElement>("[data-home-filter]");
-      const nextFilter = filterButton?.dataset.homeFilter;
-      if (!nextFilter || !isHomeFilter(nextFilter)) return;
-
-      homeFilter = nextFilter;
-      render();
     });
     render();
   } catch {

@@ -97,7 +97,7 @@ button:disabled {
 
 @layer components {
   .command-shell {
-    @apply relative mx-auto min-h-screen w-full max-w-7xl px-4 py-5 text-porcelain sm:px-6 lg:px-8;
+    @apply relative mx-auto min-h-screen w-full max-w-7xl px-4 pb-5 text-porcelain sm:px-6 lg:px-8;
   }
 
   .command-layout {
@@ -105,25 +105,55 @@ button:disabled {
   }
 
   .command-layout-single {
-    @apply pt-4 sm:pt-6;
+    @apply pt-5 sm:pt-6;
   }
 
   .command-layout-with-sidebar {
-    @apply pt-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:pt-20;
+    @apply pt-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:pt-6;
+  }
+
+  .command-site-header {
+    @apply sticky top-0 z-50 flex h-14 items-center justify-between gap-6 px-4;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    background:
+      linear-gradient(128deg, rgba(111, 134, 255, 0.16), transparent 32%),
+      linear-gradient(212deg, rgba(124, 248, 210, 0.11), transparent 36%),
+      linear-gradient(180deg, #08111f 0%, #040711 52%, #02040a 100%);
+    background-attachment: fixed;
+  }
+
+  .command-site-brand {
+    @apply flex min-w-0 items-center gap-2;
+  }
+
+  .command-site-brand a {
+    @apply inline-flex items-center text-porcelain transition hover:text-malachite focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+  }
+
+  .command-site-owner {
+    @apply font-medium tracking-normal text-porcelain;
+  }
+
+  .command-site-slash {
+    @apply inline-flex text-mist;
+  }
+
+  .command-site-home span {
+    @apply text-lg font-medium tracking-normal text-porcelain;
+  }
+
+  .command-site-nav {
+    @apply flex items-baseline gap-6;
   }
 
   .command-github-link {
-    @apply absolute right-4 top-4 z-30 inline-flex h-12 w-12 items-center justify-center rounded-lg border text-porcelain backdrop-blur-xl transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
-    border-color: rgba(124, 248, 210, 0.24);
-    background: rgba(11, 18, 32, 0.82);
-    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    @apply text-sm text-mist transition-colors hover:text-porcelain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
   }
 
   .command-github-link:hover {
-    color: var(--color-ink);
-    border-color: rgba(124, 248, 210, 0.76);
-    background: var(--color-malachite);
-    transform: translateY(-2px);
+    transform: none;
   }
 
   .command-surface,
@@ -203,34 +233,6 @@ button:disabled {
     background: rgba(2, 4, 10, 0.54);
   }
 
-  .directory-tab,
-  .directory-tab-active {
-    @apply inline-flex min-h-10 items-center gap-2 rounded-md border px-3 font-mono text-xs font-semibold uppercase transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
-  }
-
-  .directory-tab {
-    border-color: rgba(159, 178, 199, 0.18);
-    background: rgba(255, 255, 255, 0.045);
-    color: var(--color-mist);
-  }
-
-  .directory-tab:hover {
-    border-color: rgba(124, 248, 210, 0.44);
-    color: var(--color-porcelain);
-  }
-
-  .directory-tab-active {
-    color: var(--color-ink);
-    border-color: rgba(124, 248, 210, 0.68);
-    background: linear-gradient(135deg, var(--color-malachite), #8dffb8);
-  }
-
-  .directory-tab span,
-  .directory-tab-active span {
-    @apply rounded-sm px-1.5 py-0.5;
-    background: rgba(2, 4, 10, 0.24);
-  }
-
   .section-kicker {
     @apply font-mono text-xs font-semibold uppercase text-malachite;
   }
@@ -242,11 +244,45 @@ button:disabled {
     color: var(--color-malachite);
   }
 
-  .muted-chip {
-    @apply inline-flex min-h-8 items-center rounded-md border px-3 py-1 font-mono text-xs;
-    border-color: rgba(159, 178, 199, 0.18);
-    background: rgba(159, 178, 199, 0.07);
-    color: var(--color-mist);
+  .info-chip {
+    @apply inline-flex min-h-8 items-center rounded-md border px-3 py-1 font-mono text-xs font-semibold;
+    border-color: rgba(238, 247, 255, 0.22);
+    background: rgba(238, 247, 255, 0.1);
+    color: #dbeafe;
+  }
+
+  .command-label {
+    @apply inline-flex font-mono text-xs font-semibold uppercase text-porcelain;
+  }
+
+  .language-panel {
+    border-color: rgba(111, 134, 255, 0.34);
+    background:
+      linear-gradient(135deg, rgba(111, 134, 255, 0.15), rgba(124, 248, 210, 0.08)),
+      rgba(11, 18, 32, 0.9);
+  }
+
+  .language-option,
+  .language-option-active {
+    @apply flex min-h-11 items-center justify-between rounded-md border px-3 font-mono text-sm font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-malachite;
+  }
+
+  .language-option {
+    border-color: rgba(238, 247, 255, 0.3);
+    background: rgba(238, 247, 255, 0.14);
+    color: #eef7ff;
+  }
+
+  .language-option:hover {
+    border-color: rgba(124, 248, 210, 0.56);
+    background: rgba(124, 248, 210, 0.13);
+  }
+
+  .language-option-active {
+    color: #02040a !important;
+    border-color: rgba(124, 248, 210, 0.78);
+    background: linear-gradient(135deg, #ffffff, #b5ffe9);
+    box-shadow: 0 12px 32px rgba(124, 248, 210, 0.14);
   }
 
   .danger-panel {
@@ -379,6 +415,14 @@ button:disabled {
     @apply rounded-lg border px-4 py-3;
     border-color: rgba(159, 178, 199, 0.14);
     background: rgba(255, 255, 255, 0.035);
+  }
+
+  .summary-markdown > :first-child {
+    @apply mt-0;
+  }
+
+  .summary-markdown > :last-child {
+    @apply mb-0;
   }
 
   .command-input,

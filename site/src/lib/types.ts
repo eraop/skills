@@ -1,4 +1,5 @@
-export type PublishedSkill = {
+export type PublishedSkillVariant = {
+  language: string;
   name: string;
   title: string;
   description: string;
@@ -8,4 +9,8 @@ export type PublishedSkill = {
   body: string;
   bodyExcerpt: string;
   artifacts: Array<{ entryFile: string }>;
+};
+
+export type PublishedSkill = PublishedSkillVariant & {
+  variants: PublishedSkillVariant[];
 };

@@ -1,7 +1,7 @@
 export type Route =
   | { kind: "home" }
   | { kind: "edit" }
-  | { kind: "detail"; skillName: string }
+  | { kind: "detail"; skillName: string; language?: string }
   | { kind: "not-found" };
 
 export function parseRoute(hash: string): Route {
@@ -13,10 +13,13 @@ export function parseRoute(hash: string): Route {
     return { kind: "edit" };
   }
 
-  const match = hash.match(/^#\/skill\/([a-z0-9-]+)$/);
+  const match = hash.match(/^#\/skill\/([a-z0-9-]+)(?:\/([a-z0-9-]+))?$/);
   const skillName = match?.[1];
   if (skillName) {
-    return { kind: "detail", skillName };
+    const language = match[2];
+    return language
+      ? { kind: "detail", skillName, language }
+      : { kind: "detail", skillName };
   }
 
   return { kind: "not-found" };

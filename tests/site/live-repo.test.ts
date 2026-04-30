@@ -147,9 +147,12 @@ triggers:
 
     expect(skills.map((skill) => skill.name)).toEqual([
       "code-generation-guardrails",
+    ]);
+    expect(skills[0]?.variants.map((variant) => variant.name)).toEqual([
+      "code-generation-guardrails",
       "code-generation-guardrails-zh",
     ]);
-    expect(skills.map((skill) => skill.artifacts[0]?.entryFile)).toEqual([
+    expect(skills[0]?.variants.map((variant) => variant.artifacts[0]?.entryFile)).toEqual([
       "en/SKILL.md",
       "zh/SKILL.md",
     ]);

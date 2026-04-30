@@ -3,7 +3,7 @@ export function renderSkillEditor() {
     <section class="command-panel mt-6" data-ui="skill-editor-command">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <label class="section-kicker" for="skill-source">Paste a complete skill</label>
-        <span class="muted-chip">Local parser</span>
+        <span class="info-chip">Local parser</span>
       </div>
       <textarea class="command-input mt-4" id="skill-source" rows="18" spellcheck="false"></textarea>
       <div class="metadata-grid mt-5 text-sm text-mist">

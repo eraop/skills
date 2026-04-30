@@ -3,7 +3,7 @@ import { renderArchiveShell } from "./components/archive-shell.js";
 import { supportsWorkbenchMode } from "./lib/mode.js";
 import type { SkillDraft } from "./lib/skill-schema.js";
 import { renderDetailPage } from "./pages/detail.js";
-import { type HomeFilter, renderHomePage } from "./pages/home.js";
+import { renderHomePage } from "./pages/home.js";
 import { renderNotFoundPage } from "./pages/not-found.js";
 import { parseRoute } from "./router.js";
 import type { PublishedSkill } from "./lib/types.js";
@@ -77,11 +77,7 @@ async function bootstrap() {
     let skillDraft: SkillDraft | null = null;
     let skillValidationMessage = "Paste a complete wrapped skill to validate it locally.";
     let homeQuery = "";
-    let homeFilter: HomeFilter = "all";
-
-    function isHomeFilter(value: string): value is HomeFilter {
-      return value === "all" || value === "trending" || value === "hot";
-    }
+    let lastRouteKey: string | null = null;
 
     function focusHomeSearch() {
       const searchField = document.querySelector<HTMLInputElement>("#skill-search");
@@ -181,6 +177,22 @@ async function bootstrap() {
       }
     }
 
+    function routeKey(route: ReturnType<typeof parseRoute>) {
+      if (route.kind === "detail") {
+        return `${route.kind}:${route.skillName}:${route.language ?? ""}`;
+      }
+
+      return route.kind;
+    }
+
+    function syncRouteScroll(route: ReturnType<typeof parseRoute>) {
+      const nextRouteKey = routeKey(route);
+      if (nextRouteKey === lastRouteKey) return;
+
+      lastRouteKey = nextRouteKey;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+
     function render() {
       const route = parseRoute(window.location.hash);
       const rememberedRepoLabel = workbench
@@ -199,11 +211,11 @@ async function bootstrap() {
           renderHomePage(skills, {
             workbenchAvailable: workbench !== null,
             query: homeQuery,
-            filter: homeFilter,
           }),
           sidebar,
         );
         syncSkillEditor();
+        syncRouteScroll(route);
         return;
       }
 
@@ -214,11 +226,13 @@ async function bootstrap() {
             ? renderDetailPage(skill, {
                 workbenchAvailable: workbench !== null,
                 repoConnected: selectedRepoHandle !== null,
+                selectedLanguage: route.language,
               })
             : renderNotFoundPage(),
           sidebar,
         );
         syncSkillEditor();
+        syncRouteScroll(route);
         return;
       }
 
@@ -230,11 +244,13 @@ async function bootstrap() {
           sidebar,
         );
         syncSkillEditor();
+        syncRouteScroll(route);
         return;
       }
 
       appRoot.innerHTML = renderArchiveShell(renderNotFoundPage(), sidebar);
       syncSkillEditor();
+      syncRouteScroll(route);
     }
 
     document.addEventListener("input", (event) => {
@@ -249,12 +265,6 @@ async function bootstrap() {
     document.addEventListener("click", (event) => {
       const target = event.target as HTMLElement | null;
       void handleCopyCommandClick(event);
-      const filterButton = target?.closest<HTMLElement>("[data-home-filter]");
-      const nextFilter = filterButton?.dataset.homeFilter;
-      if (!nextFilter || !isHomeFilter(nextFilter)) return;
-
-      homeFilter = nextFilter;
-      render();
     });
 
     if (workbench) {

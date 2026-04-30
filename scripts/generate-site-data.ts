@@ -1,6 +1,6 @@
 import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { parseArchiveSkill } from "../site/src/lib/site-data.js";
+import { mergeSkillVariants, parseArchiveSkill } from "../site/src/lib/site-data.js";
 
 const repoRoot = process.cwd();
 const skillsRoot = path.join(repoRoot, "skills");
@@ -15,16 +15,29 @@ async function fileExists(filePath: string) {
   }
 }
 
-async function readSkillRecord(skillRoot: string, artifactEntryFile = "SKILL.md") {
+async function readSkillRecord(
+  skillRoot: string,
+  options: {
+    artifactEntryFile?: string;
+    skillName?: string;
+    language?: string;
+  } = {},
+) {
   const [documentSource, body] = await Promise.all([
     readFile(path.join(skillRoot, "skill.yaml"), "utf8"),
     readFile(path.join(skillRoot, "body.md"), "utf8"),
   ]);
 
-  return parseArchiveSkill({ documentSource, body, artifactEntryFile });
+  return parseArchiveSkill({
+    documentSource,
+    body,
+    artifactEntryFile: options.artifactEntryFile,
+    skillName: options.skillName,
+    language: options.language,
+  });
 }
 
-async function readSkillRecords(skillRoot: string) {
+async function readSkillRecords(skillRoot: string, skillName: string) {
   if (await fileExists(path.join(skillRoot, "skill.yaml"))) {
     return [await readSkillRecord(skillRoot)];
   }
@@ -44,11 +57,16 @@ async function readSkillRecords(skillRoot: string) {
           return null;
         }
 
-        return readSkillRecord(variantRoot, `${entry.name}/SKILL.md`);
+        return readSkillRecord(variantRoot, {
+          artifactEntryFile: `${entry.name}/SKILL.md`,
+          skillName,
+          language: entry.name,
+        });
       }),
   );
 
-  return records.filter((record) => record !== null);
+  const variants = records.filter((record) => record !== null);
+  return variants.length > 0 ? [mergeSkillVariants(skillName, variants)] : [];
 }
 
 const entries = await readdir(skillsRoot, { withFileTypes: true });
@@ -58,7 +76,7 @@ const skills = (
     .filter((entry) => entry.isDirectory())
     .map(async (entry) => {
       const skillRoot = path.join(skillsRoot, entry.name);
-      return readSkillRecords(skillRoot);
+      return readSkillRecords(skillRoot, entry.name);
     }),
   )
 ).flat();

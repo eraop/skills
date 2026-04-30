@@ -15,6 +15,11 @@ describe("parseRoute", () => {
       kind: "detail",
       skillName: "code-generation-guardrails"
     });
+    expect(parseRoute("#/skill/code-generation-guardrails/zh")).toEqual({
+      kind: "detail",
+      skillName: "code-generation-guardrails",
+      language: "zh"
+    });
   });
 
   it("routes the local edit page", () => {

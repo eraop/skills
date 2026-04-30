@@ -1,20 +1,19 @@
 import type { PublishedSkill } from "../lib/types.js";
 import { escapeHtml } from "../lib/html.js";
+import { getPreferredSkillVariant } from "../lib/skill-variants.js";
 
 export function renderSkillCard(
   skill: PublishedSkill,
   options: { rank?: number } = {},
 ) {
   const skillName = escapeHtml(skill.name);
-  const title = escapeHtml(skill.title);
-  const description = escapeHtml(skill.description);
+  const primaryVariant = getPreferredSkillVariant(skill);
+  const title = escapeHtml(primaryVariant.title);
+  const description = escapeHtml(primaryVariant.description);
   const triggerPreview =
-    skill.triggers.length > 0
-      ? escapeHtml(skill.triggers[0] ?? "No trigger vectors")
+    primaryVariant.triggers.length > 0
+      ? escapeHtml(primaryVariant.triggers[0] ?? "No trigger vectors")
       : "No trigger vectors";
-  const artifactLabel = escapeHtml(
-    skill.artifacts.map((artifact) => artifact.entryFile).join(", ") || "SKILL.md",
-  );
 
   return `
     <a
@@ -27,7 +26,6 @@ export function renderSkillCard(
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-3">
           <p class="section-kicker">${skillName}</p>
-          <p class="muted-chip">${artifactLabel}</p>
         </div>
         <h2 class="mt-3 font-display text-2xl font-semibold leading-tight text-porcelain">${title}</h2>
         <p class="mt-2 text-sm leading-6 text-mist">${description}</p>

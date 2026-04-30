@@ -1,4 +1,4 @@
-import { parseArchiveSkill } from "./site-data.js"
+import { mergeSkillVariants, parseArchiveSkill } from "./site-data.js"
 import { isValidRepoLayout } from "./repo-fs.js"
 import type { PublishedSkill } from "./types.js"
 
@@ -40,6 +40,7 @@ function isDirectoryHandle(
 
 async function scanSkillDirectory(
   skillRoot: FileSystemDirectoryHandle,
+  skillName: string,
 ): Promise<PublishedSkill[]> {
   if (await fileExists(skillRoot, "skill.yaml")) {
     const [documentSource, body] = await Promise.all([
@@ -65,11 +66,13 @@ async function scanSkillDirectory(
     skills.push(parseArchiveSkill({
       documentSource,
       body,
+      skillName,
+      language: entry.name,
       artifactEntryFile: `${entry.name}/SKILL.md`,
     }))
   }
 
-  return skills
+  return skills.length > 0 ? [mergeSkillVariants(skillName, skills)] : []
 }
 
 export async function scanRepoSkills(
@@ -87,7 +90,7 @@ export async function scanRepoSkills(
       continue
     }
 
-    skills.push(...await scanSkillDirectory(entry))
+    skills.push(...await scanSkillDirectory(entry, entry.name))
   }
 
   return skills.sort((left, right) => left.name.localeCompare(right.name))

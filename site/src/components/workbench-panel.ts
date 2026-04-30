@@ -14,7 +14,7 @@ export function renderWorkbenchPanel(args: {
       <section class="command-panel sticky top-20 text-sm text-mist" data-ui="workbench-command-panel">
         <div class="flex items-center justify-between gap-3">
           <p class="section-kicker">Workbench</p>
-          <span class="muted-chip">Offline</span>
+          <span class="info-chip">Offline</span>
         </div>
         <p class="mt-4 leading-6">Connect a local repository to unlock create, rebuild, and delete actions.</p>
         ${

@@ -26,5 +26,37 @@ triggers:
     expect(record.body).not.toContain("## 适用场景");
     expect(record.artifacts).toEqual([{ entryFile: "SKILL.md" }]);
     expect(record.bodyExcerpt).toContain("Keep changes narrow and consistent.");
+    expect(record.variants).toHaveLength(1);
+    expect(record.variants[0]?.language).toBe("default");
+  });
+
+  it("can publish a localized variant under a shared skill name", () => {
+    const record = parseArchiveSkill({
+      documentSource: `
+name: code-generation-guardrails-zh
+title: 代码生成约束
+description: 保持生成代码简单。
+version: 1.0.0
+tags:
+  - 代码
+triggers:
+  - 编写代码
+`,
+      body: "# 中文\n\n使用中文指南。\n",
+      artifactEntryFile: "zh/SKILL.md",
+      skillName: "code-generation-guardrails",
+      language: "zh",
+    } as any);
+
+    expect(record.name).toBe("code-generation-guardrails");
+    expect(record.title).toBe("代码生成约束");
+    expect(record.variants).toEqual([
+      expect.objectContaining({
+        language: "zh",
+        name: "code-generation-guardrails-zh",
+        body: "# 中文\n\n使用中文指南。\n",
+        artifacts: [{ entryFile: "zh/SKILL.md" }],
+      }),
+    ]);
   });
 });

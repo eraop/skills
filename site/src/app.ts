@@ -13,7 +13,13 @@ export function renderApp(route: Route, skills: PublishedSkill[]) {
   if (route.kind === "detail") {
     const skill = skills.find((entry) => entry.name === route.skillName);
     return skill
-      ? renderArchiveShell(renderDetailPage(skill))
+      ? renderArchiveShell(
+          renderDetailPage(skill, {
+            workbenchAvailable: false,
+            repoConnected: false,
+            selectedLanguage: route.language,
+          }),
+        )
       : renderArchiveShell(renderNotFoundPage());
   }
 

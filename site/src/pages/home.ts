@@ -2,13 +2,11 @@ import type { PublishedSkill } from "../lib/types.js";
 import { renderSkillCard } from "../components/skill-card.js";
 import { escapeHtml } from "../lib/html.js";
 import { renderCopyCommandRow } from "../components/copy-command-button.js";
-
-export type HomeFilter = "all" | "trending" | "hot";
+import { getSkillVariants } from "../lib/skill-variants.js";
 
 type HomePageOptions = {
   workbenchAvailable: boolean;
   query?: string;
-  filter?: HomeFilter;
 };
 
 const agentTargets = [
@@ -26,12 +24,15 @@ function matchesQuery(skill: PublishedSkill, query: string) {
 
   const haystack = [
     skill.name,
-    skill.title,
-    skill.description,
-    skill.bodyExcerpt,
-    ...skill.tags,
-    ...skill.triggers,
-    ...skill.artifacts.map((artifact) => artifact.entryFile),
+    ...getSkillVariants(skill).flatMap((variant) => [
+      variant.name,
+      variant.title,
+      variant.description,
+      variant.bodyExcerpt,
+      ...variant.tags,
+      ...variant.triggers,
+      ...variant.artifacts.map((artifact) => artifact.entryFile),
+    ]),
   ]
     .join(" ")
     .toLowerCase();
@@ -39,47 +40,12 @@ function matchesQuery(skill: PublishedSkill, query: string) {
   return haystack.includes(normalizedQuery);
 }
 
-function matchesFilter(skill: PublishedSkill, filter: HomeFilter) {
-  if (filter === "trending") {
-    return skill.triggers.length > 0;
-  }
-
-  if (filter === "hot") {
-    return skill.artifacts.length > 0;
-  }
-
-  return true;
-}
-
 export function filterHomeSkills(
   skills: PublishedSkill[],
-  options: { query?: string; filter?: HomeFilter } = {},
+  options: { query?: string } = {},
 ) {
   const query = options.query ?? "";
-  const filter = options.filter ?? "all";
-  return skills.filter(
-    (skill) => matchesQuery(skill, query) && matchesFilter(skill, filter),
-  );
-}
-
-function renderHomeFilterButton(args: {
-  filter: HomeFilter;
-  activeFilter: HomeFilter;
-  label: string;
-  count: number;
-}) {
-  const isActive = args.filter === args.activeFilter;
-
-  return `
-    <button
-      class="${isActive ? "directory-tab-active" : "directory-tab"}"
-      data-home-filter="${args.filter}"
-      type="button"
-      aria-pressed="${isActive ? "true" : "false"}"
-    >
-      ${args.label} <span>${args.count}</span>
-    </button>
-  `;
+  return skills.filter((skill) => matchesQuery(skill, query));
 }
 
 export function renderHomePage(
@@ -89,16 +55,23 @@ export function renderHomePage(
   },
 ) {
   const query = options.query ?? "";
-  const activeFilter = options.filter ?? "all";
   const filteredSkills = filterHomeSkills(skills, {
     query,
-    filter: activeFilter,
   });
   const artifactCount = new Set(
-    skills.flatMap((skill) => skill.artifacts.map((artifact) => artifact.entryFile)),
+    skills.flatMap((skill) =>
+      getSkillVariants(skill).flatMap((variant) =>
+        variant.artifacts.map((artifact) => artifact.entryFile),
+      ),
+    ),
   ).size;
   const triggerCount = skills.reduce(
-    (count, skill) => count + skill.triggers.length,
+    (count, skill) =>
+      count +
+      getSkillVariants(skill).reduce(
+        (variantCount, variant) => variantCount + variant.triggers.length,
+        0,
+      ),
     0,
   );
   const modeLabel = options.workbenchAvailable ? "Archive + local" : "Read only";
@@ -112,7 +85,7 @@ export function renderHomePage(
     <section class="command-surface" data-ui="command-deck-home">
       <div class="flex flex-wrap items-center gap-3">
         <p class="signal-chip">Archive grid</p>
-        <p class="muted-chip">${modeLabel}</p>
+        <p class="font-mono text-xs font-semibold uppercase text-mist">${modeLabel}</p>
       </div>
       <h1 class="mt-6 max-w-5xl font-display text-5xl font-semibold leading-none text-porcelain sm:text-6xl lg:text-7xl">
         Skills command deck.
@@ -127,8 +100,8 @@ export function renderHomePage(
         </div>
         <div class="rounded-lg border border-white/10 bg-white/[0.035] p-4">
           <p class="section-kicker">Available for these agents</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            ${agentTargets.map((target) => `<span class="muted-chip">${target}</span>`).join("")}
+          <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 font-mono text-xs text-mist">
+            ${agentTargets.map((target) => `<span>${target}</span>`).join("")}
           </div>
         </div>
       </div>
@@ -164,26 +137,6 @@ export function renderHomePage(
             autocomplete="off"
           />
         </label>
-      </div>
-      <div class="mt-5 flex flex-wrap gap-2">
-        ${renderHomeFilterButton({
-          filter: "all",
-          activeFilter,
-          label: "All Time",
-          count: skills.length,
-        })}
-        ${renderHomeFilterButton({
-          filter: "trending",
-          activeFilter,
-          label: "Trending",
-          count: skills.filter((skill) => skill.triggers.length > 0).length,
-        })}
-        ${renderHomeFilterButton({
-          filter: "hot",
-          activeFilter,
-          label: "Hot",
-          count: skills.filter((skill) => skill.artifacts.length > 0).length,
-        })}
       </div>
       <div class="mt-5 grid grid-cols-[3rem_minmax(0,1fr)_minmax(7rem,12rem)] gap-3 border-b border-white/10 pb-3 font-mono text-xs uppercase text-mist">
         <span>#</span>
