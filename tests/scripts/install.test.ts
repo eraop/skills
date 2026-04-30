@@ -279,6 +279,7 @@ triggers:
     });
 
     expect(output).toContain("Remote one-line usage");
+    expect(output).toContain("[--scope global|project] [--lang en|zh]");
     expect(output).not.toContain("--target");
     expect(output).not.toContain("--platform");
   });

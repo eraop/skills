@@ -26,6 +26,10 @@ export function renderDetailPage(
   const variants = getSkillVariants(skill);
   const selectedVariant = getPreferredSkillVariant(skill, options.selectedLanguage);
   const rawName = selectedVariant.name;
+  const installLanguage =
+    selectedVariant.language !== "default" && selectedVariant.language !== "en"
+      ? ` --lang ${selectedVariant.language}`
+      : "";
   const routeName = escapeHtml(skill.name);
   const name = escapeHtml(rawName);
   const title = escapeHtml(selectedVariant.title);
@@ -42,8 +46,8 @@ export function renderDetailPage(
           )
           .join("")
       : `<li class="font-mono text-xs text-mist">-</li>`;
-  const globalInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${rawName} --scope global`;
-  const projectInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${rawName} --scope project`;
+  const globalInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${skill.name} --scope global${installLanguage}`;
+  const projectInstallCommand = `curl -fsSL ${remoteInstallerUrl} | node - ${skill.name} --scope project${installLanguage}`;
   const languageSwitcher =
     variants.length > 1
       ? `

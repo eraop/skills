@@ -305,7 +305,9 @@ describe("site rendering", () => {
     expect(detailHtml).toContain('aria-pressed="true"');
     expect(detailHtml).toContain("代码生成约束");
     expect(detailHtml).toContain("使用中文指南。");
-    expect(detailHtml).toContain("node - code-generation-guardrails-zh --scope global");
+    expect(detailHtml).toContain("node - code-generation-guardrails --scope global --lang zh");
+    expect(detailHtml).toContain('data-copy-command="curl -fsSL https://raw.githubusercontent.com/eraop/skills/main/scripts/install.mjs | node - code-generation-guardrails --scope global --lang zh"');
+    expect(detailHtml).not.toContain("node - code-generation-guardrails-zh --scope global");
     expect(detailHtml).toContain('data-ui="language-switcher"');
     expect(detailHtml).toContain("#/skill/code-generation-guardrails/en");
     expect(detailHtml).not.toContain("lg:sticky");
