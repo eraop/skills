@@ -1,7 +1,7 @@
 name: code-generation-guardrails
 title: Code Generation Guardrails
-description: Keep generated code simple, consistent, narrowly scoped, and aligned with the existing project before writing or changing code.
-version: 1.0.0
+description: Use when writing, reviewing, refactoring, or modifying code where scope control, assumptions, surgical changes, and verifiable success criteria matter.
+version: 1.1.0
 tags:
   - code-generation
   - maintenance
@@ -18,6 +18,11 @@ triggers:
   - patch code
   - update function
   - modify existing code
+  - code review
+  - review code
+  - refactoring suggestion
+  - address PR feedback
+  - resolve review comments
   - small change
   - minimal implementation
   - avoid refactor

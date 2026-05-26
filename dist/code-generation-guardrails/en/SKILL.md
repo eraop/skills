@@ -1,6 +1,6 @@
 ---
 name: code-generation-guardrails
-description: Keep generated code simple, consistent, narrowly scoped, and aligned with the existing project before writing or changing code.
+description: Use when writing, reviewing, refactoring, or modifying code where scope control, assumptions, surgical changes, and verifiable success criteria matter.
 triggers:
   - write code
   - generate code
@@ -8,14 +8,19 @@ triggers:
   - patch code
   - update function
   - modify existing code
+  - code review
+  - review code
+  - refactoring suggestion
+  - address PR feedback
+  - resolve review comments
   - small change
   - minimal implementation
   - avoid refactor
 ---
 
-# Code Generation Constraints (Optimized)
+# Code Generation Constraints
 
-Generate code that is **simple, maintainable, and consistent with the existing project style**.
+Generate code that is simple, maintainable, and consistent with the existing project style.
 
 Applicable to:
 
@@ -24,6 +29,9 @@ Applicable to:
 - Implementing features
 - Fixing bugs
 - Refactoring tasks
+- Reviewing code or addressing review feedback
+
+**Tradeoff:** These constraints bias toward caution and verification. For very small low-risk tasks, keep the explanation short, but still control scope and verify the result.
 
 ---
 
@@ -40,15 +48,35 @@ Priority order:
 
 ---
 
-## 2. Global Principles
+## 2. Before Coding
+
+Before writing or changing code, clarify:
+
+- What to do: the user goal and success criteria
+- What not to do: the boundaries for this change
+- What assumptions matter: inputs, callers, compatibility, environment, or data shape
+- How to verify: tests, type checks, lint, manual checks, or review evidence
+
+Stop and surface the issue instead of choosing silently when:
+
+- The request has multiple reasonable interpretations and the choice affects behavior, APIs, data, or security
+- Key context is missing and correctness cannot be judged
+- The task requires expanding scope to finish
+- A simpler approach exists but may conflict with what the user asked for
+
+For small low-risk tasks, use the simplest reasonable assumption, but mention it in the output.
+
+---
+
+## 3. Global Principles
 
 ### 1. Consistency First
 
 - Follow existing naming, structure, coding style, and patterns
 - Prefer existing implementation approaches over introducing new paradigms
-- Do not proactively “clean up” or standardize unrelated legacy code
+- Do not proactively clean up or standardize unrelated legacy code
 
-> If existing code has clear issues (readability/correctness/security), allow **minimal fixes directly related to the task**
+> If existing code has clear issues (readability/correctness/security), allow **minimal fixes directly related to the task**.
 
 ---
 
@@ -57,16 +85,28 @@ Priority order:
 - Implement only what is required
 - Do not extend beyond current requirements
 - Do not design for hypothetical future use
+- Do not add unrequested configuration, flexibility, or extension points
+- Do not add defensive code for impossible paths
+
+If the implementation is obviously longer or more indirect than needed, simplify it before delivering.
 
 ---
 
-### 3. Control Scope of Changes
+### 3. Surgical Changes
 
 - Modify only necessary code
 - Do not change unrelated files or logic
 - Do not mix refactoring into feature work
+- Do not clean up adjacent code, comments, or formatting unless directly affected by this change
 
-> If not adjusting would significantly increase complexity or duplication, allow **small, localized cleanup**
+Every changed line should trace to the user's request or to cleanup made necessary by this change.
+
+When this change creates unused code:
+
+- Remove imports, variables, functions, or branches made unused by this change
+- Do not remove pre-existing dead code; mention it instead
+
+> If not adjusting would significantly increase complexity or duplication, allow **small, localized cleanup**, and explain why.
 
 ---
 
@@ -114,15 +154,19 @@ Otherwise:
 
 ---
 
-### 8. Testability
+### 8. Goal-Driven Verification
 
-- Keep logic verifiable
-- Minimize side effects where possible
-- Do not break existing test structure
+- First transform the task into verifiable goals
+- For bug fixes, prefer a minimal test that reproduces the failure before fixing it
+- For refactors, ensure behavior is covered before and after the change
+- For small changes without a test pattern, run type checks, lint, build, or a clear manual review
+- Do not break the existing test structure
 
-> If the task involves bug fixes or critical logic:
+Examples:
 
-- Add or update minimal necessary tests (if a testing pattern exists)
+- "Add validation" -> "Cover invalid inputs with tests, then make them pass"
+- "Fix the bug" -> "Reproduce the failure first, then make the test pass"
+- "Refactor X" -> "Existing tests pass before and after"
 
 ---
 
@@ -137,9 +181,11 @@ Always check for:
 - Performance issues (redundant computation, obvious N+1)
 - API compatibility
 
+Only handle error paths that are reachable, required by the interface contract, or covered by existing project patterns. Do not add complex defenses for impossible states.
+
 ---
 
-## 3. Task-Specific Strategy (Critical)
+## 4. Task-Specific Strategy (Critical)
 
 Adjust approach based on task type:
 
@@ -147,6 +193,7 @@ Adjust approach based on task type:
 
 - Prioritize minimal changes
 - Fix the issue precisely
+- Prefer adding or updating a minimal reproducing test when a test pattern exists
 - Do not refactor opportunistically
 - Avoid introducing new behavior
 
@@ -164,7 +211,7 @@ Adjust approach based on task type:
 ### 3. Refactoring
 
 - Do not change behavior
-- Focus on reducing duplication
+- Focus on directly related duplication
 - Improve readability and structure
 - Keep impact localized
 
@@ -186,7 +233,16 @@ Adjust approach based on task type:
 
 ---
 
-## 4. Decision Rules
+### 6. Code Review or Review Feedback
+
+- First decide whether the feedback is real, reproducible, and relevant to the request
+- Verify questionable feedback instead of accepting it blindly
+- Address only actionable items; style preferences must follow existing project conventions
+- Explain how the fix was verified
+
+---
+
+## 5. Decision Rules
 
 When multiple approaches exist, choose in order:
 
@@ -196,52 +252,52 @@ When multiple approaches exist, choose in order:
 4. Easiest to test
 5. Smallest change
 
----
-
-## 5. Pre-Implementation Checks
-
-Clarify:
-
-- What to do (goal)
-- What not to do (boundaries)
-- Scope of change (minimal solution)
-- Whether behavior must remain unchanged
-
-If unclear:
-→ Choose the **simplest and lowest-risk approach**
+If the tradeoff is meaningful, briefly explain why the chosen approach won.
 
 ---
 
 ## 6. Pre-Generation Checklist
 
+- Are the goal, boundary, assumptions, and verification method clear?
 - Is this the minimal solution?
 - Is unnecessary abstraction introduced?
 - Does it match project style?
 - Is there a simpler way?
 - Is the scope unnecessarily expanded?
+- Does every planned change trace to the user's request?
 
 ---
 
 ## 7. Post-Generation Checklist
 
 - Is the functionality correct?
+- Has verification been completed?
 - Any unintended behavior changes?
 - Is it easy to understand?
 - Any obvious risks?
 - Are names clear?
 - Is complexity reasonable?
+- Did cleanup only remove unused code created by this change?
 
 ---
 
-## 8. Output Requirements (Mandatory)
+## 8. Output Requirements
 
-When generating code, also include:
+Scale the output to the risk and size of the change. Do not create long explanations for small changes.
+
+For low-risk small changes:
+
+- Briefly state what changed
+- State what verification ran or why it could not run
+
+For medium/high-risk, cross-module, behavioral, or interface changes:
 
 1. **Change Summary**
    - What was changed
    - Scope of changes
 
 2. **Key Decisions**
+   - What assumptions were used
    - Why this is the minimal correct implementation
    - Why alternatives were not chosen
 
@@ -249,7 +305,11 @@ When generating code, also include:
    - Whether existing behavior is affected
    - Any edge-case risks
 
-4. **Deliberately Deferred Improvements (if any)**
+4. **Verification Results**
+   - Tests/checks that ran
+   - Anything not verified and why
+
+5. **Deliberately Deferred Improvements (if any)**
    - What could be improved but was intentionally not done
    - Reason (scope control / consistency)
 
@@ -258,13 +318,16 @@ When generating code, also include:
 ## 9. Anti-Patterns (Must Avoid)
 
 - Over-engineering
+- Silent assumptions about requirements
 - Designing for hypothetical future needs
 - One-off abstractions
 - Implicit side effects
 - Unrelated refactoring
-- Changing code “for elegance”
+- Changing code for elegance
 - Complex one-liners
 - Nested ternary expressions
 - Introducing unnecessary new concepts
+- Deleting pre-existing dead code without being asked
+- Finishing without verification
 
 ---
