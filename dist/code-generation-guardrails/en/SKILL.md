@@ -63,6 +63,7 @@ Stop and surface the issue instead of choosing silently when:
 - Key context is missing and correctness cannot be judged
 - The task requires expanding scope to finish
 - A simpler approach exists but may conflict with what the user asked for
+- The change involves values such as URLs, path prefixes, timeouts, or feature flags that may vary by deployment environment or runtime scenario: first confirm the project's established configuration source, precedence, and scope (for example, fixed constants, config files, environment variables, or startup parameters); do not default to one based only on where the change is easiest or smallest
 
 For small low-risk tasks, use the simplest reasonable assumption, but mention it in the output.
 
